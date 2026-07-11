@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="福岡7日遊">
+<meta name="theme-color" content="#e11d48">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<title>跟著 Young 走不會錯 - 福岡 7 日遊 🗾</title>
+<style>
+:root{
+  --pri:#e11d48; --pril:#ffe4e6; --prid:#9f1239;
+  --sea:#0ea5e9; --seal:#e0f2fe;
+  --ok:#059669; --warn:#d97706; --gold:#ca8a04;
+  --bg:#fafaf9; --card:#ffffff;
+  --g100:#f5f5f4; --g200:#e7e5e4; --g300:#d6d3d1;
+  --g500:#78716c; --g600:#57534e; --g700:#44403c; --g900:#1c1917;
+  --shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--g900);
+  font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Hiragino Sans","Microsoft JhengHei",sans-serif;
+  line-height:1.6;font-size:16px}
+body{padding-bottom:76px}
+
+/* Header */
+header{position:sticky;top:0;z-index:50;background:linear-gradient(135deg,var(--pri),var(--prid));
+  color:#fff;padding:14px 16px 12px;box-shadow:var(--shadow)}
+header h1{font-size:19px;font-weight:800;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+header .sub{font-size:12px;opacity:.9;margin-top:2px}
+
+/* Day tabs */
+.daytabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;background:var(--card);
+  border-bottom:1px solid var(--g200);position:sticky;top:60px;z-index:40;-webkit-overflow-scrolling:touch}
+.daytabs::-webkit-scrollbar{display:none}
+.daytab{flex:0 0 auto;border:1.5px solid var(--g200);background:var(--card);border-radius:14px;
+  padding:7px 12px;font-size:13px;font-weight:700;color:var(--g600);cursor:pointer;text-align:center;line-height:1.25;min-width:62px}
+.daytab .d{font-size:11px;font-weight:600;color:var(--g500)}
+.daytab.active{background:var(--pri);border-color:var(--pri);color:#fff}
+.daytab.active .d{color:#ffe4e6}
+
+/* Content */
+main{padding:14px 12px 20px;max-width:640px;margin:0 auto}
+.dayhead{display:flex;align-items:baseline;gap:10px;margin:2px 0 12px;flex-wrap:wrap}
+.dayhead .big{font-size:22px;font-weight:800}
+.dayhead .theme{font-size:14px;color:var(--pri);font-weight:700}
+.dayhead .jp{font-size:12px;color:var(--g500)}
+
+.card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);margin-bottom:12px;overflow:hidden;border:1px solid var(--g100)}
+.card-h{display:flex;align-items:center;gap:8px;padding:12px 14px;font-weight:800;font-size:15px;background:var(--g100);border-bottom:1px solid var(--g200);flex-wrap:wrap}
+.card-h .ico{font-size:18px}
+.card-b{padding:12px 14px}
+.cardnum{background:var(--pri);color:#fff;font-size:12px;font-weight:800;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.reorder-btns{margin-left:auto;display:flex;gap:4px}
+.ordbtn{background:var(--card);border:1px solid var(--g200);border-radius:8px;width:28px;height:28px;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--g600);cursor:pointer;flex-shrink:0}
+.ordbtn:active{background:var(--g100)}
+.ordbtn:disabled{opacity:.25}
+.daytools{display:flex;justify-content:flex-end;margin:2px 0 10px}
+.resetbtn{font-size:12px;color:var(--g600);background:none;border:none;text-decoration:underline;cursor:pointer;padding:4px}
+.packrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--g100)}
+.packrow:last-child{border-bottom:none}
+.packrow input[type=checkbox]{width:20px;height:20px;flex-shrink:0;accent-color:var(--pri)}
+.packrow .ptxt{flex:1;font-size:15px;word-break:break-word}
+.packrow.checked .ptxt{text-decoration:line-through;color:var(--g400)}
+.qtybox{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.qtybtn{width:24px;height:24px;border-radius:8px;border:1px solid var(--g200);background:var(--card);color:var(--g600);font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.qtybtn:active{background:var(--g100)}
+.qtyval{min-width:20px;text-align:center;font-size:14px;font-weight:700;color:var(--g700)}
+.packdel{background:none;border:none;color:var(--g400);font-size:16px;padding:4px 6px;cursor:pointer;flex-shrink:0}
+.packadd{display:flex;gap:8px;margin-top:4px}
+.packadd input{flex:1;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;font-size:15px}
+.packadd button{flex-shrink:0}
+.packprog{font-size:13px;color:var(--g600);margin-bottom:8px}
+.packbar{height:6px;background:var(--g100);border-radius:99px;overflow:hidden;margin-bottom:14px}
+.packbar-fill{height:100%;background:var(--ok);border-radius:99px;transition:width .2s}
+
+/* Timeline / steps */
+.step{display:flex;gap:11px;padding:9px 0;border-bottom:1px dashed var(--g200)}
+.step:last-child{border-bottom:none}
+.step .dot{flex:0 0 auto;width:11px;height:11px;border-radius:50%;background:var(--pri);margin-top:7px;box-shadow:0 0 0 3px var(--pril)}
+.step.sea .dot{background:var(--sea);box-shadow:0 0 0 3px var(--seal)}
+.step .body{flex:1;min-width:0}
+.step .t{font-weight:700;font-size:15px}
+.step .t .jpn{font-weight:500;color:var(--g500);font-size:12px}
+.step .meta{font-size:13px;color:var(--g600);margin-top:2px}
+.time{display:inline-block;background:var(--seal);color:#0369a1;font-weight:700;font-size:12px;
+  padding:1px 8px;border-radius:8px;margin-right:6px}
+.tag{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:7px;margin:3px 4px 0 0}
+.tag.hr{background:var(--g100);color:var(--g600)}
+.tag.tip{background:#fef3c7;color:var(--gold)}
+.tag.must{background:var(--pril);color:var(--prid)}
+
+/* map link */
+.maplink{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#fff;
+  background:var(--sea);padding:3px 9px;border-radius:9px;text-decoration:none;margin-top:5px}
+.maplink:active{background:#0284c7}
+.piclink{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:#fff;
+  background:var(--pri);padding:3px 9px;border-radius:9px;text-decoration:none;margin:5px 0 0 5px}
+.piclink:active{background:var(--prid)}
+a.tel{color:var(--pri);font-weight:700;text-decoration:none}
+
+/* food list */
+.food{padding:8px 0;border-bottom:1px dashed var(--g200)}
+.food:last-child{border-bottom:none}
+.food .n{font-weight:700;font-size:14px}
+.food .n .jpn{font-weight:500;color:var(--g500);font-size:12px}
+.food .d{font-size:13px;color:var(--g600);margin-top:1px}
+
+/* note box */
+.note{background:#fffbeb;border-left:4px solid var(--warn);padding:9px 12px;border-radius:0 10px 10px 0;font-size:13px;color:#78350f;margin:8px 0}
+.note b{color:#92400e}
+
+/* PIN */
+.lockwrap{text-align:center;padding:30px 18px}
+.lockwrap .lk{font-size:46px}
+.lockwrap h2{font-size:18px;margin:10px 0 4px}
+.lockwrap p{font-size:13px;color:var(--g600);margin-bottom:16px}
+.pinbox{display:flex;gap:8px;justify-content:center;margin:8px 0 14px}
+.pinbox input{width:48px;height:56px;text-align:center;font-size:24px;font-weight:800;border:2px solid var(--g300);
+  border-radius:12px;background:var(--card)}
+.pinbox input:focus{border-color:var(--pri);outline:none}
+.btn{background:var(--pri);color:#fff;border:none;border-radius:12px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer}
+.btn.ghost{background:var(--g100);color:var(--g700)}
+.errmsg{color:var(--pri);font-size:13px;font-weight:700;min-height:18px}
+
+/* bottom nav */
+nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--card);border-top:1px solid var(--g200);
+  display:flex;padding:6px 4px 8px;box-shadow:0 -1px 6px rgba(0,0,0,.05)}
+nav button{flex:1;background:none;border:none;font-size:10px;font-weight:700;color:var(--g500);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px}
+nav button .ni{font-size:20px}
+nav button.active{color:var(--pri)}
+.hidden{display:none!important}
+.mini{font-size:11px;color:var(--g500)}
+
+/* travel mode bar */
+.modebar{display:flex;align-items:center;gap:6px;padding:8px 12px;background:var(--seal);
+  border-bottom:1px solid var(--g200);overflow-x:auto}
+.modebar::-webkit-scrollbar{display:none}
+.modebar .mlabel{font-size:12px;font-weight:700;color:#0369a1;flex:0 0 auto}
+.mbtn{flex:0 0 auto;border:1.5px solid #bae6fd;background:#fff;color:#0369a1;border-radius:20px;
+  padding:5px 12px;font-size:13px;font-weight:700;cursor:pointer}
+.mbtn.active{background:var(--sea);border-color:var(--sea);color:#fff}
+
+/* floating where-am-I button */
+.fab{position:fixed;right:14px;bottom:86px;z-index:70;background:var(--sea);color:#fff;border:none;
+  border-radius:26px;padding:12px 16px;font-size:14px;font-weight:800;cursor:pointer;
+  box-shadow:0 3px 10px rgba(2,132,199,.4)}
+.fab:active{background:#0284c7}
+.fab.busy{opacity:.6}
+
+/* collapsible insider tips */
+.tips{margin-top:7px}
+.tipToggle{background:#fffbeb;border:1px solid #fde68a;color:#92400e;border-radius:10px;
+  padding:4px 11px;font-size:12px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.tipToggle:active{background:#fef3c7}
+.tipToggle .arw{font-size:10px}
+.tipBody{margin-top:6px;background:#fffbeb;border-left:3px solid var(--warn);border-radius:0 8px 8px 0;padding:5px 10px}
+.tipItem{font-size:12.5px;color:#78350f;padding:3px 0;display:flex;gap:7px;line-height:1.55;align-items:flex-start}
+.tt{flex:0 0 auto;font-weight:800;font-size:10.5px;padding:1px 6px;border-radius:6px;margin-top:2px;white-space:nowrap}
+.tt.queue{background:#fef3c7;color:#b45309}
+.tt.warn{background:#fed7aa;color:#c2410c}
+.tt.no{background:#fecaca;color:#b91c1c}
+.tt.pro{background:#d1fae5;color:#047857}
+.tt.close{background:#e5e7eb;color:#374151}
+.tt.spoil{background:#ede9fe;color:#6d28d9}
+
+/* audio guide */
+.guide{margin-top:7px}
+.guideBar{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.glabel{font-size:12px;font-weight:800;color:#6d28d9}
+.gbtn{background:#ede9fe;border:1px solid #ddd6fe;color:#6d28d9;border-radius:10px;
+  padding:4px 10px;font-size:12px;font-weight:800;cursor:pointer}
+.gbtn:active{background:#ddd6fe}
+.gbtn.stop{background:#f3f4f6;border-color:#e5e7eb;color:#4b5563}
+.gbtn.on{background:#8b5cf6;border-color:#8b5cf6;color:#fff}
+.guideText{margin-top:6px;background:#f5f3ff;border-left:3px solid #8b5cf6;border-radius:0 8px 8px 0;
+  padding:7px 11px;font-size:12.5px;color:#4c1d95;line-height:1.65}
+.guideText .en{display:block;margin-top:5px;color:#5b21b6;font-style:italic}
+
+/* AI helper */
+.flbl{display:block;font-size:12px;font-weight:700;color:var(--g600);margin:8px 0 3px}
+.fld{width:100%;border:1.5px solid var(--g300);border-radius:10px;padding:9px 11px;font-size:14px;font-family:inherit;background:var(--card)}
+.fld:focus{outline:none;border-color:var(--pri)}
+.chipRow{display:flex;gap:6px;overflow-x:auto;padding:2px 0 10px}
+.chipRow::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;background:var(--pril);border:1px solid #fecdd3;color:var(--prid);border-radius:16px;
+  padding:6px 12px;font-size:12.5px;font-weight:700;cursor:pointer;white-space:nowrap}
+.chip:active{background:#fecdd3}
+.chatMsgs{min-height:180px;max-height:calc(100vh - 330px);overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:4px 0}
+.msg{max-width:86%;padding:9px 12px;border-radius:14px;font-size:14px;line-height:1.55;word-break:break-word}
+.msg.u{align-self:flex-end;background:var(--pri);color:#fff;border-bottom-right-radius:4px}
+.msg.a{align-self:flex-start;background:var(--card);border:1px solid var(--g200);color:var(--g900);border-bottom-left-radius:4px}
+.chatBar{display:flex;gap:8px;position:sticky;bottom:80px;background:var(--bg);padding:8px 0 4px}
+.chatInput{flex:1;border:1.5px solid var(--g300);border-radius:22px;padding:10px 16px;font-size:15px;font-family:inherit;background:var(--card)}
+.chatInput:focus{outline:none;border-color:var(--pri)}
+.chatSend{flex:0 0 auto;width:44px;border:none;border-radius:50%;background:var(--pri);color:#fff;font-size:18px;cursor:pointer}
+.chatSend:active{background:var(--prid)}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🗾 跟著 Young 走不會錯 <span style="font-weight:600;font-size:13px;opacity:.85">福岡 7 日遊 2026</span></h1>
+  <div class="sub">7/16（四）– 7/22（三）・博多祇園櫛田神社前西鐵克魯姆酒店</div>
+</header>
+
+<!-- DAY TABS -->
+<div class="daytabs" id="daytabs"></div>
+
+<!-- TRAVEL MODE BAR -->
+<div class="modebar">
+  <span class="mlabel">🧭 導航方式</span>
+  <button data-m="walking" class="mbtn">🚶 步行</button>
+  <button data-m="transit" class="mbtn">🚆 大眾</button>
+  <button data-m="driving" class="mbtn">🚗 開車</button>
+</div>
+
+<main id="main"></main>
+
+<!-- WHERE AM I (floating) -->
+<button id="fabLoc" class="fab">🧭 我在哪</button>
+
+<!-- BOTTOM NAV -->
+<nav id="nav">
+  <button data-view="days" class="active"><span class="ni">📅</span>行程</button>
+  <button data-view="food"><span class="ni">🍜</span>美食</button>
+  <button data-view="buy"><span class="ni">🎁</span>採買</button>
+  <button data-view="konbini"><span class="ni">🏪</span>超商</button>
+  <button data-view="pack"><span class="ni">🎒</span>備品</button>
+  <button data-view="helper"><span class="ni">🤖</span>小幫手</button>
+  <button data-view="private"><span class="ni">🔒</span>私人</button>
+</nav>
+
+<script>
+/* ---------- helpers ---------- */
+let travelMode = localStorage.getItem('fuk_mode') || 'transit';
+function gmap(q){return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q);}
+function gdir(q){return 'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(q)+'&travelmode='+travelMode;}
+function ml(q,label){return '<a class="maplink" target="_blank" rel="noopener" href="'+gdir(q)+'">🧭 '+(label||'導航')+'</a>';}
+function ph(q){return '<a class="piclink" target="_blank" rel="noopener" href="'+gmap(q)+'">📷 照片</a>';}
+
+/* ---------- insider tips (tap to reveal) ---------- */
+const LBL={queue:'⏳ 排隊',warn:'⚠️ 注意',no:'🚫 千萬別',pro:'💡 秘訣',close:'📅 公休',spoil:'🔮 暴雷'};
+const TIPS={
+ '西鉄イン福岡 櫛田神社前':[
+   {k:'no',x:'大件行李務必走 6 號出口電梯！直接從 4／5 號出口爬樓梯會相當辛苦。'},
+   {k:'pro',x:'大浴場冰棒福利只有晚上 15:00–01:00 有，早上泡完是沒得吃的。'},
+   {k:'warn',x:'大浴巾、毛巾房內不提供，要自己帶去大浴場。'},
+   {k:'pro',x:'續住為環保不會天天打掃，想要完整清潔跟櫃檯說一聲即可。'},
+ ],
+ '一蘭 総本店 博多':[
+   {k:'pro',x:'24 小時營業；早上 8:00–8:15 有太鼓表演可以看。'},
+ ],
+ '一蘭 キャナルシティ博多':[
+   {k:'pro',x:'方形碗（釜だれ豚骨）只有博多運河城店和天神西通店吃得到，別家沒有。'},
+ ],
+ '麺屋一矢 中洲':[
+   {k:'pro',x:'原本不在口袋名單，因飯店人員推薦才去，結果成了此行最愛。'},
+   {k:'warn',x:'營業分兩段：11:00–14:00 與 20:00–04:00，別跑空。'},
+ ],
+ 'キャナルシティ ラーメンスタジアム':[
+   {k:'pro',x:'運河城 5 樓拉麵競技場，多家名店集中，可一次比較。'},
+ ],
+ 'B-speak 湯布院':[
+   {k:'warn',x:'生乳捲需電話預約（電話在 🔒 私人頁），確定取貨日再打即可，沒規定要提前多久。'},
+   {k:'queue',x:'人氣名店，現場常常賣完，建議先預約。'},
+ ],
+ 'homme blue cafe 湯布院':[
+   {k:'no',x:'店內嚴格禁止拍照，別舉相機。'},
+ ],
+ '湯之坪街道 富士食品':[
+   {k:'pro',x:'轉角水果店的草莓一盒只要 ¥500–800，又香又甜，比超市還便宜。'},
+   {k:'spoil',x:'幾乎每個去過的人都後悔沒多買幾盒，看到就直接下手。'},
+ ],
+ '今泉堂 湯布院':[
+   {k:'pro',x:'金鱗湖旁步行僅 5 分；招牌是沖繩黑糖皮＋北海道十勝紅豆的黑糖炸饅頭。'},
+ ],
+ '由布院駅':[
+   {k:'pro',x:'由布號／由布院之森班次密集；回程搭之森 6 號時可在車上／車站買伴手禮。'},
+ ],
+ '九州 FUNPASS':[
+   {k:'warn',x:'若最後不去皿倉山，記得重新算交通費，看買 FUNPASS 划不划算。'},
+ ],
+ '門司港駅':[
+   {k:'warn',x:'搭山陽新幹線的旅客要先走「新幹線轉 JR」專用閘門，再依「鹿兒島本線・門司港方面」指標找正確月台。'},
+ ],
+ '関門トンネル人道 めかり':[
+   {k:'pro',x:'徒步穿越海底人行隧道到和布刈，在觀潮公園記念碑前拍照可拿官方「踏破證明書」。'},
+ ],
+ '皿倉山ケーブルカー':[
+   {k:'warn',x:'JR 八幡站下車後要轉 TAXI 約 10 分才到纜車站，再搭纜車 10 分到山頂。'},
+   {k:'pro',x:'出發前先查好假日班表（官網），末班別錯過。'},
+ ],
+ '太宰府天満宮':[
+   {k:'queue',x:'御守很搶手，尤其「梳子御守」，早上九點多去就可能只剩幾個。'},
+   {k:'pro',x:'想要的御守建議一早就衝，聽說很容易完售。'},
+ ],
+ '一蘭 太宰府参道店':[
+   {k:'pro',x:'五角碗與長達 59cm 的麵條都取「合格」諧音好彩頭；9:00 開，可當早餐吃。'},
+ ],
+ '筑紫庵 本店 太宰府':[
+   {k:'warn',x:'店員只會日文，直接拿餐點圖片指給店員點最快。'},
+ ],
+ 'スターバックス 太宰府天満宮表参道店':[
+   {k:'queue',x:'隈研吾設計的名店，人潮多要有排隊心理準備。'},
+   {k:'pro',x:'2000＋根木條斜向交織、內部完全沒用金屬釘，值得抬頭看。'},
+ ],
+ 'full full 天神':[
+   {k:'close',x:'週二公休。'},
+   {k:'pro',x:'明太子麵包人氣超高，建議先繞去拿。'},
+ ],
+ '草千里ヶ浜':[
+   {k:'warn',x:'依火山活動與風向，B1／B2／C／D 區可能臨時管制，請留意廣播、聽從火山口監視員指揮。'},
+ ],
+ '道の駅 阿蘇':[
+   {k:'pro',x:'ASO MILK 牛奶餅乾（牛造型）是人氣 No.1 伴手禮。'},
+   {k:'pro',x:'現場便當有加熱服務，買馬肉／紅牛便當可請店家加熱。'},
+ ],
+ '阿蘇神社':[
+   {k:'pro',x:'開放 9:00–17:00；門前町商店街的とり宮馬肉可樂餅 08:00–19:00 順路吃。'},
+ ],
+ 'CURRENT 糸島':[
+   {k:'warn',x:'已預訂 11:30 午餐，別遲到。'},
+   {k:'close',x:'週三公休。'},
+ ],
+ '糸島 花塩プリン':[
+   {k:'warn',x:'車停在外面停車要 ¥300，之後沿小路步行約 3 分才到。'},
+   {k:'pro',x:'中間寫「塩」的地方可以試吃鹽，風味特別。'},
+ ],
+ 'NATTY DREAD 糸島':[
+   {k:'close',x:'每週三公休。'},
+   {k:'pro',x:'招牌是 jerk chicken 漢堡，外帶到海邊吃心情更好。'},
+ ],
+ '桜井二見ヶ浦 夫婦岩':[
+   {k:'pro',x:'白色鳥居＋海上夫妻岩超好拍，開車沿海岸線一路都是拍照點。'},
+ ],
+ '如水庵 博多駅前本店':[
+   {k:'no',x:'水果大福不能帶回國，當地吃掉。'},
+ ],
+ 'だしいなり 海木 福岡':[
+   {k:'warn',x:'需當日電話預約（電話在 🔒 私人頁，上午 10:00 起才接聽）。'},
+   {k:'pro',x:'渡邊通站步行 1 分；會出汁的豆皮壽司，被讚神級美味。'},
+ ],
+ '努努鶏 博多 MING':[
+   {k:'no',x:'千萬不要加熱！就是要冷冷地吃。'},
+   {k:'pro',x:'招牌冷炸雞翅，中盒 230g 約 2–3 人剛好；建議下午 6 點前買以免售罄。'},
+ ],
+ '鈴懸 博多':[
+   {k:'warn',x:'銅鑼燒保存期限只有 2 天（含購買當天），別放太久。'},
+   {k:'pro',x:'銅鑼燒強烈建議買大的（餅皮比較讚）；鈴乃最中可放約 30 天適合送禮。'},
+ ],
+ 'ミニヨン 博多駅':[
+   {k:'pro',x:'大家都說巧克力口味比原味好吃，旁邊的明太子口味也很讚。'},
+ ],
+ 'truffle 天神 Solaria':[
+   {k:'pro',x:'隱藏版蛋沙拉松露吐司超好吃；招牌白松露鹽可頌是木村拓哉推薦。'},
+ ],
+ '芋屋金次郎 天神':[
+   {k:'warn',x:'糖蜜地瓜條 3 日內要用完。'},
+   {k:'queue',x:'現炸要排隊。'},
+ ],
+ 'ルクレール 博多':[
+   {k:'pro',x:'可麗露超便宜，一顆約 ¥40。'},
+ ],
+ 'ドンキホーテ 中洲':[
+   {k:'pro',x:'吹風機 EH-NA9F（有點重）；BIC CAMERA 也有賣。'},
+ ],
+ '茶織屋':[
+   {k:'pro',x:'機場快閃店，橘綠色比較甜；一定留一份自己吃，吃完通常會再回購。'},
+ ],
+};
+function tipsHtml(key){
+  const a=TIPS[key]; if(!a) return '';
+  return '<div class="tips"><button class="tipToggle" onclick="toggleTip(this)">💡 內幕提醒 ('+a.length+')<span class="arw">▾</span></button>'+
+    '<div class="tipBody hidden">'+a.map(t=>'<div class="tipItem"><span class="tt '+t.k+'">'+LBL[t.k]+'</span><span>'+t.x+'</span></div>').join('')+'</div></div>';
+}
+function toggleTip(btn){
+  const body=btn.nextElementSibling; const nowHidden=body.classList.toggle('hidden');
+  const arw=btn.querySelector('.arw'); if(arw) arw.textContent=nowHidden?'▾':'▴';
+}
+
+/* ---------- audio guide (景點語音導覽) ---------- */
+const GUIDE={
+ '櫛田神社':{
+   zh:'櫛田神社是博多的總鎮守，起源可追溯到西元七五七年，自古就是當地人的信仰中心。每年七月舉辦的博多祇園山笠祭典，已在二零一六年被聯合國教科文組織列入世界非物質文化遺產。主祭神為大幡大神、天照皇大神與素盞嗚大神。',
+   en:'Kushida Shrine is the guardian shrine of Hakata, with origins dating back to the year 757. Its famous Hakata Gion Yamakasa festival, held every July, was inscribed as a UNESCO Intangible Cultural Heritage in 2016.'},
+ '太宰府天満宮':{
+   zh:'太宰府天満宮供奉學問之神菅原道真，是全日本約一萬兩千座天滿宮的總本社之一。一千多年來，無數考生前來祈求金榜題名。境內的飛梅傳說與心字池上的太鼓橋都很有名。',
+   en:'Dazaifu Tenmangu enshrines Sugawara no Michizane, the deity of learning. For over a thousand years, students have prayed here for exam success. Don’t miss the legendary flying plum tree and the arched bridges over Shinji Pond.'},
+ 'スターバックス 太宰府天満宮表参道店':{
+   zh:'這家星巴克由國際建築大師隈研吾設計，運用超過兩千根木條以斜向交織的方式構築，營造出宛如森林般的空間，而且內部結構完全沒有使用任何金屬釘子，是日本最著名的特色門市之一。',
+   en:'This Starbucks was designed by world-renowned architect Kengo Kuma. Over two thousand wooden battens are woven diagonally into a forest-like space, built entirely without metal nails.'},
+ '湯布院フローラルビレッジ':{
+   zh:'湯布院坐落在由布岳山腳下，被譽為龍貓的故鄉。童話村以英國鄉村風情打造，四處是宮崎駿動畫的角色布置，充滿夢幻氛圍，是九州最受歡迎的溫泉度假小鎮之一。',
+   en:'Yufuin sits at the foot of Mount Yufu and is beloved as the home of Totoro. This fairy-tale village is styled after the English countryside, filled with Studio Ghibli characters, and is one of Kyushu’s most popular hot-spring towns.'},
+ '金鱗湖':{
+   zh:'金鱗湖位於湯之坪街道盡頭，因湖底同時湧出溫泉與冷泉，清晨常瀰漫夢幻晨霧。夕陽照射時湖面魚鱗般閃爍金光，因而得名，是湯布院的象徵風景。',
+   en:'Kinrin Lake lies at the end of Yunotsubo Street. Fed by both hot and cold springs, it often shrouds in dreamy morning mist. Its name, meaning golden scales, comes from the way the water glitters at sunset.'},
+ '春帆楼 下関':{
+   zh:'春帆樓是一八九五年馬關條約的簽訂地，也就是結束甲午戰爭的日清講和談判場。日本首相伊藤博文與清朝李鴻章在此談判，這段歷史深深影響了東亞近代的局勢。旁邊還設有重現當年場景的歷史館。',
+   en:'Shunpanro is where the Treaty of Shimonoseki was signed in 1895, ending the First Sino-Japanese War. Here Japan’s Ito Hirobumi negotiated with the Qing envoy Li Hongzhang, a moment that reshaped modern East Asia. A small museum next door recreates the scene.'},
+ '門司港駅':{
+   zh:'門司港曾是九州重要的國際貿易港，如今保留了大正時代的復古洋樓建築群，稱為門司港懷舊區。門司港車站本身是日本重要文化財，燒咖哩更是這裡的招牌名物。',
+   en:'Mojiko was once Kyushu’s major international trade port. Today its Taisho-era Western buildings form the charming Mojiko Retro district. The station itself is a cultural property, and baked curry is the local specialty.'},
+ '関門トンネル人道 めかり':{
+   zh:'關門海底人行隧道全長約七百八十公尺，連接本州下關與九州門司，是世界少見可以徒步走過海底、跨越縣界的通道。走完可在和布刈的紀念碑取得官方踏破證明書。',
+   en:'The Kanmon Pedestrian Tunnel runs about 780 meters beneath the strait, linking Honshu and Kyushu. It’s a rare chance to walk under the sea across a prefectural border. Finish it to earn an official completion certificate.'},
+ '皿倉山ケーブルカー':{
+   zh:'皿倉山標高約六百二十二公尺，山頂夜景被譽為百億美元的夜景，並獲選為新日本三大夜景之一。搭乘纜車直上山頂，北九州的市街燈火盡收眼底。',
+   en:'Mount Sarakura rises about 622 meters, and its summit view is famed as the ten-billion-dollar night view, ranked among Japan’s new three great night vistas. The cable car carries you to the top over the glittering city of Kitakyushu.'},
+ '草千里ヶ浜':{
+   zh:'阿蘇擁有世界最大級的破火山口之一，五座中央火峰合稱阿蘇五岳，最高的高岳達一千五百九十二公尺。持續活躍的中岳可近距離看見藍綠色火口湖與噴煙；山腳的草千里之濱則是一片遼闊的火山大草原。',
+   en:'Aso holds one of the world’s largest calderas. Its five central peaks rise up to 1,592 meters at Takadake. The active Nakadake crater reveals a turquoise crater lake, while Kusasenri below is a vast volcanic grassland.'},
+ '米塚 阿蘇':{
+   zh:'米塚是阿蘇山麓一座高約八十公尺、外型完美對稱的小火山錐，宛如倒扣的飯碗。傳說是阿蘇開拓之神將收成的米堆成的，山頂凹陷像酒窩，被暱稱為阿蘇的酒窩。',
+   en:'Komezuka is a perfectly symmetrical little cinder cone about 80 meters high, like an upturned rice bowl. Legend says Aso’s guardian deity piled up harvested rice here; the dimple at its top earns it the nickname Aso’s dimple.'},
+ '阿蘇神社':{
+   zh:'阿蘇神社擁有超過兩千年歷史，是全國約五百座阿蘇神社的總本社，供奉阿蘇開拓之神健磐龍命。其樓門為日本三大樓門之一，在二零一六年熊本地震後歷經重建，門前町商店街也很值得一逛。',
+   en:'Aso Shrine, over two thousand years old, is the head of some 500 Aso shrines nationwide. Its grand tower gate is one of Japan’s three greatest. Rebuilt after the 2016 Kumamoto earthquake, its approach street is lovely to explore.'},
+ '上色見熊野座神社':{
+   zh:'上色見熊野座神社隱身於森林之中，參道兩旁排列著近百座覆滿青苔的石燈籠，氣氛幽玄神祕，被認為是動畫螢火之森的靈感場景之一，充滿療癒的靈氣。',
+   en:'Kamishikimi Kumano Shrine hides deep in the forest, its approach lined with nearly a hundred moss-covered stone lanterns. Its mystical atmosphere is said to have inspired the anime The Forest of Fireflies’ Light.'},
+ '芥屋の大門':{
+   zh:'芥屋大門是一座由六角形玄武岩柱構成的海蝕洞，被列為日本三大玄武岩洞之一，也是國家指定天然紀念物。可搭乘觀光遊覽船進入洞內，欣賞大自然的鬼斧神工。',
+   en:'Keya no Oto is a sea cave formed of hexagonal basalt columns, ranked among Japan’s three great basalt caves and designated a natural monument. Sightseeing boats take you inside to marvel at this natural wonder.'},
+ '桜井二見ヶ浦 夫婦岩':{
+   zh:'這裡的夫妻岩是兩塊由注連繩相繫的海上巨岩，象徵夫妻圓滿，搭配海中的白色鳥居，是糸島最具代表性的夕陽美景，也被選為日本夕陽百選之一。',
+   en:'The Married Couple Rocks are two sea boulders joined by a sacred rope, symbolizing marital harmony. Framed by a white torii in the water, they form Itoshima’s iconic sunset view, chosen among Japan’s 100 best sunsets.'},
+ '桜井神社 糸島':{
+   zh:'櫻井神社建於一六三二年，由福岡藩主黑田家所建，主殿為國家重要文化財。近年因與偶像團體嵐的櫻井姓成員同名，也成為粉絲參拜的人氣景點。',
+   en:'Sakurai Shrine, built in 1632 by the Kuroda lords of Fukuoka, has a main hall designated an important cultural property. It has also become popular with fans who share the name of Arashi’s member Sakurai.'},
+ '大濠公園':{
+   zh:'大濠公園是以福岡城的護城河大濠為基礎，仿中國西湖打造的水景公園，湖中小島以橋相連，是福岡市民散步、慢跑的最愛，旁邊就是福岡市美術館。',
+   en:'Ohori Park was created from the moat of Fukuoka Castle, modeled after China’s West Lake. Islands linked by bridges dot the pond, making it a favorite for strolling and jogging, right beside the Fukuoka Art Museum.'},
+};
+let speaking=null;
+function warmVoices(){ try{ speechSynthesis.getVoices(); }catch(e){} }
+if('speechSynthesis' in window){ warmVoices(); speechSynthesis.onvoiceschanged=warmVoices; }
+function speak(key,lang,btn){
+  if(!('speechSynthesis' in window)){ alert('此瀏覽器不支援語音，請改用 Safari 或 Chrome。'); return; }
+  const g=GUIDE[key]; if(!g) return;
+  speechSynthesis.cancel();
+  document.querySelectorAll('.gbtn.on').forEach(b=>b.classList.remove('on'));
+  const u=new SpeechSynthesisUtterance(lang==='en'?g.en:g.zh);
+  u.lang=lang==='en'?'en-US':'zh-TW'; u.rate=0.96; u.pitch=1;
+  const vs=speechSynthesis.getVoices();
+  const v=vs.find(v=>(v.lang||'').toLowerCase().startsWith(lang==='en'?'en':'zh'));
+  if(v)u.voice=v;
+  if(btn)btn.classList.add('on');
+  u.onend=()=>{ if(btn)btn.classList.remove('on'); };
+  speechSynthesis.speak(u);
+}
+function stopSpeak(){ try{speechSynthesis.cancel();}catch(e){} document.querySelectorAll('.gbtn.on').forEach(b=>b.classList.remove('on')); }
+function toggleGuideText(btn){ btn.parentElement.nextElementSibling.classList.toggle('hidden'); }
+function guideHtml(key){
+  const g=GUIDE[key]; if(!g) return '';
+  const k=key.replace(/"/g,'&quot;');
+  return '<div class="guide"><div class="guideBar"><span class="glabel">🎧 語音導覽</span>'+
+    '<button class="gbtn" onclick="speak(\''+k+'\',\'zh\',this)">🔊 中文</button>'+
+    '<button class="gbtn" onclick="speak(\''+k+'\',\'en\',this)">🔊 EN</button>'+
+    '<button class="gbtn stop" onclick="stopSpeak()">⏹</button>'+
+    '<button class="gbtn" onclick="toggleGuideText(this)">📖 文字</button></div>'+
+    '<div class="guideText hidden">'+g.zh+'<span class="en">'+g.en+'</span></div></div>';
+}
+
+/* ---------- ITINERARY DATA ---------- */
+const DAYS = [
+{
+  date:'7/16', dow:'四', theme:'抵達福岡', jp:'到着',
+  cards:[
+    {ico:'✈️',h:'航班 · フライト',steps:[
+      {t:'長榮 BR10',jpn:'台北桃園 T2 → 福岡 T1',meta:'<span class="time">15:10</span>起飛　<span class="time">18:20</span>抵達'},
+    ]},
+    {ico:'🚌',h:'機場 → 市區 · 空港からの交通',steps:[
+      {t:'免費接駁巴士',jpn:'Shuttle Bus・5 號巴士站',meta:'國際線出海關→循「Shuttle Bus」指標→5 號巴士站候車。約 10 分到國內線航廈（06:18–23:21，5–6 分一班）'},
+      {t:'福岡市地下鐵 機場線',jpn:'福岡空港駅',meta:'國內線航廈內搭乘。到<b>博多</b> 5 分 / <b>天神</b> 11 分，單程 ¥260',map:'福岡空港駅'},
+      {t:'計程車（替代）',jpn:'タクシー',meta:'博多 15 分・天神 20 分，¥1,500–2,500。機動性高免預約，費用稍高'},
+    ]},
+    {ico:'🏨',h:'住宿 · ホテル',steps:[
+      {t:'博多祇園櫛田神社前西鐵克魯姆酒店',jpn:'西鉄イン福岡・櫛田神社前',meta:'七隈線「櫛田神社前站」4 或 5 號出口，步行十來步。<b>大件行李走 6 號出口電梯</b>！',map:'西鉄イン福岡 櫛田神社前'},
+    ],notes:[
+      '<b>大浴場（1F）</b>：15:00–01:00，隔天 6:30–9:30。晚間時段（15:00–01:00）有冰棒福利，早上沒有。大浴巾/毛巾要自己帶去。',
+      '2F 自助備品區：牙刷、刮鬍刀、沐浴巾等一次性用品自取。行李寄物櫃（密碼鎖＋行李秤）入住前/退房後免費用。',
+    ]},
+    {ico:'🍜',h:'第一晚吃 · 夕食',foods:[
+      {n:'博多かわ屋 祇園店',jpn:'雞皮串燒',d:'17:00–01:00・離飯店 6 分、離一蘭 7 分',map:'博多かわ屋 祇園店'},
+      {n:'一蘭拉麵 總本店',jpn:'一蘭 総本店',d:'24 小時・8:00–8:15 有太鼓表演',map:'一蘭 総本店 博多'},
+      {n:'博多運河城',jpn:'キャナルシティ博多',d:'開到 21:00・Tully\'s（1F 到 21:00）奶茶必喝',map:'キャナルシティ博多'},
+    ]},
+    {ico:'🚶',h:'飯店周邊散步 · ホテル周辺',foods:[
+      {n:'上川端通商店街',jpn:'上川端商店街',d:'步行 5 分・全長 400m。蒐集麵包超人地磚、喫茶ボネ、麵包店 PAN DEL SOL',map:'上川端商店街'},
+      {n:'博多餃子 游心',jpn:'游心',d:'走路 8 分',map:'博多餃子 游心'},
+      {n:'東長寺',jpn:'東長寺',d:'走路 8 分',map:'東長寺 福岡'},
+      {n:'伊都きんぐ',jpn:'いときんぐ',d:'草莓銅鑼燒有名（機場/博多/天神都有）',map:'伊都きんぐ'},
+      {n:'中洲善哉',jpn:'ぜんざい',d:'烤麻糬紅豆湯，紅豆超甜',map:'中洲ぜんざい'},
+      {n:'ボネ',jpn:'喫茶ボネ',d:'黑布丁（日式焦糖布丁）',map:'喫茶ボネ 博多'},
+    ]},
+  ]
+},
+{
+  date:'7/17', dow:'五', theme:'由布院（龍貓的故鄉）', jp:'湯布院',
+  cards:[
+    {ico:'🚆',h:'交通 · 列車',steps:[
+      {t:'祇園 → 博多車站',jpn:'祇園→博多',meta:'從飯店走或地鐵 1 分（僅隔 1 站），班次每 4–8 分一班'},
+      {t:'去程：由布號',jpn:'ゆふ / ゆふいんの森',meta:'<span class="time">7:43</span>發車 → <span class="time">10:02</span>由布院',map:'由布院駅'},
+      {t:'回程：由布院之森 6 號',jpn:'ゆふいんの森 6号',meta:'<span class="time">17:17</span>發車 → <span class="time">19:27</span>博多（可買伴手禮）'},
+    ]},
+    {ico:'🏞️',h:'景點 · 観光',steps:[
+      {t:'湯布院花卉村（童話村）',jpn:'湯布院フローラルビレッジ',meta:'英國街道風情免費景點，宮崎駿商品、可餵山羊兔子',map:'湯布院フローラルビレッジ'},
+      {t:'SNOOPY 茶屋 湯布院店',jpn:'スヌーピー茶屋',meta:'史奴比主題餐廳＋限定周邊',map:'スヌーピー茶屋 湯布院'},
+      {t:'金鱗湖',jpn:'金鱗湖',meta:'湯之坪街道盡頭，散步好去處',map:'金鱗湖'},
+    ]},
+    {ico:'🍮',h:'必吃美食 · グルメ',foods:[
+      {n:'B-speak 蛋糕卷',jpn:'ビースピーク',d:'⚠ 需電話預約（詳見🔒私人）',map:'B-speak 湯布院'},
+      {n:'telato 抹茶冰',jpn:'テラート',d:'5 種濃度義式抹茶冰淇淋',map:'telato 湯布院'},
+      {n:'橡實之森',jpn:'どんぐりの森',d:'龍貓紀念品專賣店',map:'どんぐりの森 湯布院'},
+      {n:'Milch 布丁',jpn:'ミルヒ',d:'半熟起司蛋糕、甜甜圈也讚',map:'ミルヒ 湯布院'},
+      {n:'今泉堂 黑糖炸饅頭',jpn:'今泉堂',d:'金鱗湖旁步行 5 分・沖繩黑糖皮＋十勝紅豆餡（招牌）',map:'今泉堂 湯布院'},
+      {n:'富士食品（轉角水果店）',jpn:'富士食品',d:'湯之坪街道轉角・草莓一盒 ¥500–800，超便宜',map:'湯之坪街道 富士食品'},
+      {n:'花麹菊家',jpn:'花麹菊家',d:'布丁銅鑼燒（homme blue cafe 左邊）',map:'花麹菊家 湯布院'},
+      {n:'homme blue cafe',jpn:'オムブルーカフェ',d:'手作陶瓷（店內禁止拍照）',map:'homme blue cafe 湯布院'},
+      {n:'金賞可樂餅 / 吉吾炸雞 / 5toku 抹茶 / mana mana 可麗露 / Nico 黃豆甜甜圈',jpn:'',d:'湯之坪街道沿途小吃',map:'湯之坪街道'},
+    ]},
+    {ico:'🍢',h:'晚餐',foods:[{n:'屋台',jpn:'屋台',d:'博多回來後可逛中洲屋台（見🍜美食頁）'}]},
+  ]
+},
+{
+  date:'7/18', dow:'六', theme:'門司港・下關・皿倉山夜景', jp:'門司港',
+  cards:[
+    {ico:'🎫',h:'票券',steps:[
+      {t:'九州 FUNPASS',jpn:'',meta:'先購買（若不去皿倉山要重新估交通費）',map:''},
+    ]},
+    {ico:'🚄',h:'去程交通 · 往路',steps:[
+      {t:'地鐵七隈線 → 博多',jpn:'七隈線（綠線）',meta:'搭 5 分'},
+      {t:'新幹線 博多 → 小倉',jpn:'新幹線 博多→小倉',meta:'搭 20 分（12 分一班）',map:'小倉駅'},
+      {t:'JR 鹿兒島本線 → 門司港',jpn:'鹿児島本線→門司港',meta:'小倉轉車，搭 15 分。※新幹線旅客先過轉乘專用閘門，依「鹿兒島本線・門司港方面」指標找月台',map:'門司港駅'},
+    ]},
+    {ico:'🍛',h:'門司港 · 觀光美食',steps:[
+      {t:'燒咖哩 伽哩本舖',jpn:'門司港レトロ店',meta:'11:00–20:00・門司港名物燒咖哩',map:'伽哩本舗 門司港レトロ店'},
+      {t:'唐戶市場（下關）',jpn:'唐戸市場',meta:'搭渡輪 20 分一班到下關，新鮮海產當午餐',map:'唐戸市場'},
+      {t:'春帆樓',jpn:'春帆楼',meta:'馬關條約簽訂處（日清講和談判場），旁有小歷史館',map:'春帆楼 下関'},
+      {t:'海底人行隧道',jpn:'関門トンネル人道',meta:'徒步穿越本州↔九州；和布刈觀潮公園記念碑拍照可拿「踏破證明書」',map:'関門トンネル人道 めかり'},
+    ]},
+    {ico:'🌃',h:'皿倉山夜景 · 夜景',steps:[
+      {t:'JR 小倉 → 八幡',jpn:'鹿児島本線',meta:'八幡下車 → TAXI 10 分到纜車站 → 纜車 10 分到山頂',map:'皿倉山ケーブルカー'},
+      {t:'回程',jpn:'帰路',meta:'八幡 →(JR) 小倉 →(新幹線) 博多，看要不要吃屋台'},
+    ],notes:['il forno del mignon 排隊可頌：博多車站、小倉站附近都有賣。']},
+  ]
+},
+{
+  date:'7/19', dow:'日', theme:'太宰府天滿宮', jp:'太宰府',
+  cards:[
+    {ico:'⛩️',h:'行程 · コース',steps:[
+      {t:'櫛田神社',jpn:'櫛田神社',meta:'飯店旁走路就到。博多總鎮守，7/1–15 有博多祇園山笠',map:'櫛田神社 福岡'},
+      {t:'西鐵 → 太宰府',jpn:'西鉄 太宰府線',meta:'天神 → 二日市 → 轉太宰府線，30 分 ¥480。觀光列車去程 9:48',map:'太宰府駅'},
+      {t:'太宰府天滿宮',jpn:'太宰府天満宮',meta:'學問之神。御守：鷽鳥御神籤、合格鉛筆、梳子御守、金色狐狸/鳥御守（早上易完售，建議早衝）',map:'太宰府天満宮'},
+      {t:'太宰府星巴克',jpn:'スターバックス 太宰府天満宮表参道店',meta:'隈研吾設計，2000＋根木條交織如森林',map:'スターバックス 太宰府天満宮表参道店'},
+    ]},
+    {ico:'🍜',h:'太宰府美食',foods:[
+      {n:'合格一蘭拉麵',jpn:'太宰府参道店',d:'9:00–19:00・五角碗、麵長 59cm 諧音「合格」（可當早餐）',map:'一蘭 太宰府参道店'},
+      {n:'天山 布丁',jpn:'てんざん',d:'推薦原味、八女抹茶',map:'天山 太宰府'},
+      {n:'SAWAWA',jpn:'さわわ',d:'抹茶冰淇淋、蕨餅',map:'SAWAWA 太宰府'},
+      {n:'福太郎 太宰府店',jpn:'福太郎',d:'明太子烤飯糰',map:'福太郎 太宰府'},
+      {n:'筑紫庵 本店',jpn:'筑紫庵',d:'唐揚雞漢堡（只會日文，拿圖片點）',map:'筑紫庵 本店 太宰府'},
+      {n:'Loop a Bread',jpn:'',d:'明太子麵爆餡',map:'Loop a Bread 太宰府'},
+    ]},
+    {ico:'🍞',h:'回天神 · 逛街',steps:[
+      {t:'full full 明太子麵包',jpn:'フルフル',meta:'人氣超高必吃・回天神拿',map:'full full 天神'},
+      {t:'麵包超人兒童博物館',jpn:'アンパンマンこどもミュージアム',meta:'（可選）',map:'福岡アンパンマンこどもミュージアム'},
+    ]},
+  ]
+},
+{
+  date:'7/20', dow:'一', theme:'阿蘇火山（包車）', jp:'阿蘇',
+  cards:[
+    {ico:'🚐',h:'包車 · チャーター',steps:[
+      {t:'海獅 10 座',jpn:'',meta:'開始：櫛田神社西鐵克魯姆酒店。全日 ¥73,000（詳情見🔒私人）'},
+    ]},
+    {ico:'🌋',h:'行程路線 · コース',steps:[
+      {t:'Aso Roadside Station',jpn:'道の駅 阿蘇',meta:'9:00–18:00・買伴手禮、ASO MILK 霜淇淋、熊本熊玩偶、馬肉/紅牛便當',map:'道の駅 阿蘇'},
+      {t:'阿蘇火山 · 草千里',jpn:'阿蘇山・草千里',meta:'中岳活火山藍綠色火口湖；草千里火山大草原（依火山活動可能管制 B1/B2/C/D 區）',map:'草千里ヶ浜'},
+      {t:'草千里珈琲焙煎所',jpn:'Kusasenri Coffee Roastery',meta:'每天營業，對面就是草千里大草原，窗邊喝咖啡看火山',map:'草千里珈琲焙煎所'},
+      {t:'阿蘇米塚',jpn:'米塚',meta:'80m 完美對稱小火山錐「阿蘇的酒窩」',map:'米塚 阿蘇'},
+      {t:'阿蘇神社（門前町商店街）',jpn:'阿蘇神社',meta:'9:00–17:00。門前町：阿蘇菓子工房 Tanoya、阿蘇とり宮（馬肉可樂餅 08:00–19:00）',map:'阿蘇神社'},
+      {t:'上色見熊野神社',jpn:'上色見熊野座神社',meta:'苔蘚石階與鳥居，幽玄夢幻',map:'上色見熊野座神社'},
+      {t:'回博多車站',jpn:'博多駅',meta:''},
+    ]},
+    {ico:'🥩',h:'餐食',foods:[
+      {n:'鉄板焼 阿蘇まーぼー',jpn:'',d:'午餐・距阿蘇神社步行 5 分・赤牛香蒜飯 No.1（約 ¥2,000）',map:'鉄板焼 阿蘇まーぼー'},
+      {n:'焼肉センター 博多ハラミ+',jpn:'',d:'晚餐燒肉・博多車站走 2 分',map:'焼肉センター 博多ハラミ'},
+    ]},
+  ]
+},
+{
+  date:'7/21', dow:'二', theme:'糸島（包車）', jp:'糸島',
+  cards:[
+    {ico:'🚐',h:'包車 · チャーター',steps:[
+      {t:'天神車站出發',jpn:'',meta:'全日 ¥65,000（詳情見🔒私人）。糸島＝「福岡的後花園」'},
+    ]},
+    {ico:'🌊',h:'行程路線 · コース',steps:[
+      {t:'櫻井神社 二見浦夫妻岩',jpn:'桜井二見ヶ浦 夫婦岩',meta:'白色鳥居＋海上夫妻岩，超好拍',map:'桜井二見ヶ浦 夫婦岩'},
+      {t:'CURRENT',jpn:'カレント',meta:'✅ 已預訂 11:30 午餐・海邊 8:00–17:00（週三休），窯烤披薩、糸島豚',map:'CURRENT 糸島'},
+      {t:'櫻井神社',jpn:'桜井神社',meta:'',map:'桜井神社 糸島'},
+      {t:'芥屋大門',jpn:'芥屋の大門',meta:'日本三大玄武岩洞之一，可搭遊覽船',map:'芥屋の大門'},
+      {t:'手工花鹽布丁',jpn:'',meta:'10:00–17:00・原味/巧克力/焦糖/咖啡牛奶/鹽味，停車 ¥300 步行 3 分',map:'糸島 花塩プリン'},
+      {t:'回天神車站',jpn:'天神駅',meta:''},
+    ]},
+    {ico:'☕',h:'糸島咖啡 · カフェ',foods:[
+      {n:'Beach Cafe SUNSET',jpn:'',d:'11:00–21:00・北崎海岸線，開車沿路好拍',map:'Beach Cafe SUNSET 糸島'},
+      {n:'LONDON BUS CAFE',jpn:'',d:'10:00–17:00・雙層紅色倫敦巴士改裝（only 冰）',map:'LONDON BUS CAFE 糸島'},
+      {n:'NATTY DREAD',jpn:'',d:'11:30–17:00（週三休）・jerk chicken 漢堡',map:'NATTY DREAD 糸島'},
+      {n:'Cafe & Restaurant BeaSun',jpn:'',d:'漢堡排好吃',map:'BeaSun 糸島'},
+    ]},
+  ]
+},
+{
+  date:'7/22', dow:'三', theme:'大濠公園・採買・返程', jp:'帰国',
+  cards:[
+    {ico:'🌳',h:'上午 · 午前',steps:[
+      {t:'大濠公園 · 福岡市美術館',jpn:'大濠公園・福岡市美術館',meta:'',map:'大濠公園'},
+      {t:'&LOCALS 大濠公園',jpn:'',meta:'9:00–18:30 早午餐/午餐，有賣抹茶粉',map:'&LOCALS 大濠公園'},
+    ]},
+    {ico:'🍤',h:'午餐選項',foods:[
+      {n:'Sakana To Gohan Nagi',jpn:'魚とごはん なぎ',d:'在地人推薦・炸蝦天商業午餐',map:'魚とごはん なぎ 福岡'},
+      {n:'海木豆皮壽司',jpn:'だしいなり Dashi-inari',d:'渡邊通站 1 分・會出汁的豆皮（神級）⚠當日電話預約，見🔒私人',map:'だしいなり 海木 福岡'},
+    ]},
+    {ico:'🎁',h:'博多車站 · 最後採買',steps:[
+      {t:'見「採買」頁',jpn:'',meta:'治一郎布丁、如水庵水果大福、努努雞、MIGNON 可頌、press butter sand… 點下方 🎁 採買',map:''},
+    ]},
+    {ico:'✈️',h:'福岡機場必買 · 空港',foods:[
+      {n:'the matcha tokyo',jpn:'',d:'3F 出發登機口 51A 旁・必喝抹茶',map:'the matcha tokyo 福岡空港'},
+      {n:'AMANBERRY 甘王草莓餅乾',jpn:'',d:'福岡限定',map:''},
+      {n:'島本明太子醬 / 味之明太子 Fukuya',jpn:'ふくや',d:'明太子鹹派',map:''},
+      {n:'茶織屋',jpn:'',d:'快閃店（橘綠色比較甜），必留自己吃',map:''},
+      {n:'PRESS BUTTER SAND',jpn:'',d:'博多限定',map:''},
+    ],notes:['⚠ 大福不能帶回國。免稅店在國內線航廈 2F（ANA FESTA / SOLAE）。']},
+  ]
+},
+];
+
+/* pristine copy for "還原順序" reset */
+const ORIGINAL_DAYS = JSON.parse(JSON.stringify(DAYS));
+
+/* ---------- FOOD PAGE (specials) ---------- */
+const FOOD_SECTIONS = [
+ {ico:'🍜',title:'拉麵特輯',items:[
+   {n:'一蘭 方形拉麵',jpn:'釜だれとんこつ',d:'僅「博多運河城店」和「天神西通店」吃得到方格子碗',map:'一蘭 キャナルシティ博多'},
+   {n:'一蘭 總本店',jpn:'一蘭 総本店',d:'24 小時・8:00–8:15 有表演',map:'一蘭 総本店 博多'},
+   {n:'博多運河城 拉麵競技場',jpn:'ラーメンスタジアム',d:'運河城 5F・多家名店（飯店人員推薦）',map:'キャナルシティ ラーメンスタジアム'},
+   {n:'麵屋兼虎',jpn:'麺屋兼虎',d:'天神本店 10:00–22:00 / PARCO 店 10:45–22:00',map:'麺屋兼虎 天神本店'},
+   {n:'Shin-Shin',jpn:'博多らーめん Shin-Shin',d:'天神本店 11:00–03:00',map:'Shin-Shin 天神本店'},
+   {n:'麺屋 一矢',jpn:'麺屋一矢',d:'中洲・11:00–14:00 & 20:00–04:00',map:'麺屋一矢 中洲'},
+ ]},
+ {ico:'🍩',title:'甜甜圈特輯',items:[
+   {n:"I'm donut ?",jpn:'アイムドーナツ',d:'生甜甜圈・天神店有在地限定口味（渡辺通 5-24-30）10:00–賣完',map:"I'm donut? 福岡天神"},
+   {n:'AMAM DACOTAN',jpn:'アマムダコタン',d:'六本松・爆餡麵包本店 08:00–17:00',map:'AMAM DACOTAN 福岡'},
+   {n:'dacō',jpn:'ダコ',d:'今泉・小巧麵包 11:00–19:00',map:'dacō 今泉 福岡'},
+ ]},
+ {ico:'🥐',title:'麵包特輯',items:[
+   {n:"BOUL'ANGE",jpn:'ブールアンジュ',d:'博多站前 7:30–21:00（六日 8:00）・飯店附近也有',map:"BOUL'ANGE 博多"},
+   {n:'Dacomecca',jpn:'ダコメッカ',d:'博多站走 5 分・7:00–19:00・明太子酸種神好吃（週一休）',map:'Dacomecca 博多'},
+   {n:'painstock',jpn:'パンストック',d:'明太子麵包 ¥605・週一休 8:30 開',map:'パンストック 福岡'},
+   {n:'MIGNON 博多店',jpn:'ミニヨン',d:'JR 博多站 1F・迷你牛角包 07:00–23:00・巧克力比原味好吃',map:'ミニヨン 博多駅'},
+   {n:'MUTSUKADO',jpn:'パン屋むつか堂',d:'博多站 5F・避開中午',map:'むつか堂 博多'},
+ ]},
+ {ico:'🍢',title:'屋台・居酒屋・燒肉（鹹的）',items:[
+   {n:'屋台 たっちゃん',jpn:'',d:'中洲清流公園・櫛田神社前站步行 3 分',map:'屋台 たっちゃん 中洲'},
+   {n:'武ちゃん',jpn:'',d:'博多一口煎餃（不能追加點）',map:'武ちゃん 中洲'},
+   {n:'Kawaya Gion',jpn:'かわ屋 祇園',d:'居酒屋（只收現金）・烤雞皮最有名、溫州蜜柑沙瓦',map:'かわ屋 祇園'},
+   {n:'焼肉センター 博多ハラミ+',jpn:'',d:'博多站走 2 分',map:'焼肉センター 博多ハラミ'},
+   {n:'博多牛腸鍋 大山 KITTE 店',jpn:'もつ鍋 大山',d:'KITTE 博多・午餐套餐不收座位費',map:'もつ鍋 大山 KITTE博多'},
+   {n:'雜炊の店 お通 Otuu',jpn:'',d:'中洲・開到早上 5 點的雜炊專賣（宵夜收尾）',map:'雑炊の店 お通 中洲'},
+ ]},
+];
+
+/* ---------- BUY / SOUVENIR PAGE ---------- */
+const BUY_SECTIONS = [
+ {ico:'🚉',title:'博多車站',items:[
+   {n:'治一郎 布丁',jpn:'じいちろう',d:'10:00–21:00・1F いっぴん通り・綿密濃郁布丁',map:'治一郎 博多駅'},
+   {n:'如水庵 水果大福',jpn:'如水庵',d:'博多駅前本店・水果大福必吃（⚠大福不能帶回國）',map:'如水庵 博多駅前本店'},
+   {n:'努努雞',jpn:'ヌヌ鶏',d:'MING 商場內・9:00–21:00・冷炸雞翅（別加熱！6 點前買）',map:'努努鶏 博多 MING'},
+   {n:'Imonne 麻糬冰淇淋',jpn:'いもんね',d:'博多 KITTE 1F・現點現包',map:'Imonne 博多 KITTE'},
+   {n:'LECLERC 可麗露',jpn:'ルクレール',d:'Amu Plaza 博多 B1F・9:00–21:00・一顆約 ¥40',map:'ルクレール 博多'},
+   {n:'PRESS BUTTER SAND',jpn:'',d:'博多驛店 09:00–21:00・筑紫口方向',map:'PRESS BUTTER SAND 博多'},
+   {n:'松風庵 かねすえ',jpn:'',d:'DEITOS 1F いっぴん通り・蕨餅抹茶好吃・10:00–21:00',map:'松風庵かねすえ 博多デイトス'},
+   {n:'full full 明太子麵包',jpn:'フルフル',d:'博多店走 3 分・10:00–19:00（週二休）',map:'full full 博多'},
+   {n:'辻利兵衛本店 博多店',jpn:'辻利兵衛本店',d:'博多阪急 B1F',map:'辻利兵衛本店 博多阪急'},
+ ]},
+ {ico:'🛍️',title:'博多阪急百貨 B1',items:[
+   {n:'AMANBERRY 草莓奶油夾心餅乾',jpn:'',d:'福岡限定・B1 伴手禮區',map:'博多阪急'},
+   {n:'Sabrina 花朵餅乾',jpn:'サブリナ',d:'杏仁奶油花朵千層・B1（離 AMANBERRY 很近）',map:'博多阪急'},
+   {n:'鈴懸',jpn:'鈴懸',d:'鈴乃最中（保存 30 天）、銅鑼燒（僅 2 天，建議買大的）',map:'鈴懸 博多'},
+   {n:'八女茶 langue de chat',jpn:'綠色戀人',d:'博多車站有試吃・抹茶味夠',map:''},
+ ]},
+ {ico:'🏙️',title:'天神',items:[
+   {n:'如水庵 筑紫餅',jpn:'',d:'ONE FUKUOKA BLDG. B2F・10:00–20:00',map:'如水庵 天神 ワンビル'},
+   {n:"BOUL'ANGE",jpn:'',d:'地下街口・平日 8:30–20:00',map:"BOUL'ANGE 天神"},
+   {n:'芋屋金次郎',jpn:'',d:'糖蜜地瓜條・大袋 200g ¥500（3 日內用完）',map:'芋屋金次郎 天神'},
+   {n:'RINGO 蘋果派',jpn:'',d:'9:00–21:00・現烤蘋果派',map:'RINGO 天神'},
+   {n:'truffle mini',jpn:'トリュフ',d:'Solaria Stage B1・松露鹽可頌（木村拓哉推薦）、蛋沙拉松露吐司',map:'truffle 天神 Solaria'},
+   {n:'Gyukatsu Motomura',jpn:'牛かつもと村',d:'天神 PARCO・超好吃炸豬排',map:'牛かつもと村 天神PARCO'},
+   {n:'UNIQLO 天神店',jpn:'ユニクロ',d:'Mina 天神・明太子聯名 T、現場客製刺繡',map:'ユニクロ ミーナ天神'},
+ ]},
+ {ico:'🛒',title:'超市・電器・雜貨',items:[
+   {n:'Bon Repas / Timbre 超市',jpn:'',d:'KITTE 博多・丸井 1F・10:00–21:00',map:'ボンラパス KITTE博多'},
+   {n:'唐吉訶德',jpn:'ドン・キホーテ',d:'BIC CAMERA 也有（吹風機 EH-NA9F）',map:'ドンキホーテ 中洲'},
+ ]},
+];
+
+/* ---------- KONBINI PAGE ---------- */
+const KONBINI = [
+ {ico:'🔵',title:'7-11',items:['起司漢堡排','草莓牛奶果昔','蒙古辣味噌泡麵','白巧克力夾心奶油餅乾','帶皮薯條餅乾','Choya highball','高千穗咖啡歐蕾','Ohayo Brulee 焦糖布蕾冰淇淋（台灣賣很貴）']},
+ {ico:'🟢',title:'全家 FamilyMart',items:['舒芙蕾布丁','餅乾泡芙','たべる牧場ミク冰淇淋','高千穗咖啡歐蕾']},
+ {ico:'🔷',title:'Lawson',items:['辣味雞排・辣味炸雞球','麻糬泡芙','高千穗咖啡歐蕾','霜淇淋']},
+ {ico:'💡',title:'超市選購小撇步',items:['牛奶看折角：頂端有半圓弧形缺口＝500ml 以上 100% 純鮮乳；平的＝低脂/調味/加工乳','果汁看圖案：真實水果照片＝含量≥5%；只有插畫卡通＝<5%；切開的真水果＝100%']},
+];
+
+/* ---------- 備品 (packing checklist) default items ---------- */
+const PACK_DEFAULT = [
+  '護照','機票／登機證截圖','日幣現金','信用卡（有海外免手續費）',
+  '手機充電器','行動電源','轉接頭（台灣→日本可直插，備用即可）',
+  '常備藥（腸胃藥、止痛藥、感冒藥）','個人慢性病藥品',
+  '雨傘或輕便雨衣','薄外套','拖鞋（飯店大浴場用）','大浴巾／小毛巾',
+  '牙刷牙膏（部分飯店有備品可少帶）','隱形眼鏡／眼鏡',
+  '防曬乳','轉換插座延長線','空的環保袋（裝戰利品）','悠遊卡或交通 IC 卡',
+];
+
+/* ---------- PRIVATE (PIN-locked) ---------- */
+const PRIVATE_FIELDS = [
+ {ico:'🎨',title:'Canva & 密碼',fields:[
+   {id:'canva',label:'Canva 連結',ml:false},
+   {id:'pw_mom',label:'媽媽密碼',ml:false},
+   {id:'pw_me',label:'我的密碼',ml:false},
+ ]},
+ {ico:'📱',title:'保險・App 提醒',fields:[
+   {id:'esim',label:'eSIM 備註',ml:false},
+   {id:'insure',label:'保險連結',ml:false},
+   {id:'vjw',label:'Visit Japan Web / 醫療險',ml:false},
+   {id:'passcase',label:'passcase',ml:false},
+ ]},
+ {ico:'☎️',title:'電話預約',fields:[
+   {id:'tel_bspeak',label:'B-speak 生乳捲 電話',ml:false},
+   {id:'tel_umi',label:'海木豆皮壽司 電話',ml:false},
+ ]},
+ {ico:'🚐',title:'包車資訊',fields:[
+   {id:'car_contact',label:'聯絡人 / LINE ID',ml:false},
+   {id:'car_cust',label:'客戶名稱 / 人數 / 車款',ml:false},
+   {id:'car_720',label:'7/20 阿蘇 行程・費用',ml:true},
+   {id:'car_721',label:'7/21 糸島 行程・費用',ml:true},
+   {id:'car_incl',label:'費用包含',ml:true},
+ ]},
+ {ico:'💰',title:'付款資訊',fields:[
+   {id:'pay_total',label:'總價',ml:false},
+   {id:'pay_deposit',label:'定金',ml:false},
+   {id:'pay_bank',label:'銀行',ml:false},
+   {id:'pay_acc',label:'帳號 / 戶名',ml:false},
+   {id:'pay_final',label:'尾款',ml:false},
+   {id:'pay_note',label:'備註',ml:true},
+ ]},
+ {ico:'📝',title:'其他備註',fields:[
+   {id:'note1',label:'自訂備註 1',ml:true},
+   {id:'note2',label:'自訂備註 2',ml:true},
+ ]},
+];
+
+/* ================= RENDER ================= */
+let curDay = 0;
+const main = document.getElementById('main');
+const tabsEl = document.getElementById('daytabs');
+
+function buildDayTabs(){
+  tabsEl.innerHTML = DAYS.map((d,i)=>
+    '<button class="daytab'+(i===curDay?' active':'')+'" data-i="'+i+'">'+
+    d.date+'<div class="d">('+d.dow+')</div></button>').join('');
+  tabsEl.querySelectorAll('.daytab').forEach(b=>b.onclick=()=>{curDay=+b.dataset.i;renderDays();});
+}
+
+function stepHtml(s,sea){
+  let m = s.meta||'';
+  let map = s.map ? ml(s.map, s.map)+ph(s.map) : '';
+  return '<div class="step'+(sea?' sea':'')+'"><span class="dot"></span><div class="body">'+
+    '<div class="t">'+s.t+(s.jpn?' <span class="jpn">'+s.jpn+'</span>':'')+'</div>'+
+    (m?'<div class="meta">'+m+'</div>':'')+ (map?'<div>'+map+'</div>':'') + tipsHtml(s.map||s.t) + guideHtml(s.map||s.t) +'</div></div>';
+}
+function foodHtml(f){
+  return '<div class="food"><div class="n">'+f.n+(f.jpn?' <span class="jpn">'+f.jpn+'</span>':'')+'</div>'+
+    (f.d?'<div class="d">'+f.d+'</div>':'')+ (f.map?ml(f.map,f.map)+ph(f.map):'') + tipsHtml(f.map||f.n) +'</div>';
+}
+function renderDays(){
+  setNav('days'); buildDayTabs();
+  const d = DAYS[curDay];
+  let h = '<div class="dayhead"><span class="big">'+d.date+'（'+d.dow+'）</span>'+
+    '<span class="theme">'+d.theme+'</span><span class="jp">'+d.jp+'</span></div>';
+  h += '<div class="daytools"><button class="resetbtn" onclick="resetOrder()">↺ 還原本日原始順序</button></div>';
+  d.cards.forEach((c,idx)=>{
+    const isFirst = idx===0, isLast = idx===d.cards.length-1;
+    h += '<div class="card"><div class="card-h"><span class="cardnum">'+(idx+1)+'</span><span class="ico">'+c.ico+'</span>'+c.h+
+      '<span class="reorder-btns">'+
+        '<button class="ordbtn" onclick="moveCard('+idx+',-1)"'+(isFirst?' disabled':'')+'>▲</button>'+
+        '<button class="ordbtn" onclick="moveCard('+idx+',1)"'+(isLast?' disabled':'')+'>▼</button>'+
+      '</span></div><div class="card-b">';
+    if(c.steps) h += c.steps.map(s=>stepHtml(s, c.h.indexOf('皿倉')>-1||c.h.indexOf('渡輪')>-1)).join('');
+    if(c.foods) h += c.foods.map(foodHtml).join('');
+    if(c.notes) h += c.notes.map(n=>'<div class="note">'+n+'</div>').join('');
+    h += '</div></div>';
+  });
+  main.innerHTML = h; window.scrollTo(0,0);
+}
+function saveOrder(d){
+  localStorage.setItem('fuk_order_'+d.date, JSON.stringify(d.cards.map(c=>c.h)));
+}
+function moveCard(idx, dir){
+  const d = DAYS[curDay];
+  const j = idx + dir;
+  if(j < 0 || j >= d.cards.length) return;
+  const tmp = d.cards[idx]; d.cards[idx] = d.cards[j]; d.cards[j] = tmp;
+  saveOrder(d);
+  renderDays();
+}
+function resetOrder(){
+  const d = DAYS[curDay];
+  const orig = ORIGINAL_DAYS[curDay];
+  d.cards = JSON.parse(JSON.stringify(orig.cards));
+  localStorage.removeItem('fuk_order_'+d.date);
+  renderDays();
+}
+function applySavedOrder(){
+  DAYS.forEach(d=>{
+    const saved = localStorage.getItem('fuk_order_'+d.date);
+    if(!saved) return;
+    try{
+      const order = JSON.parse(saved);
+      const map = {}; d.cards.forEach(c=>{ map[c.h] = map[c.h] || []; map[c.h].push(c); });
+      const newCards = [];
+      order.forEach(h=>{ if(map[h] && map[h].length) newCards.push(map[h].shift()); });
+      d.cards.forEach(c=>{ if(!newCards.includes(c)) newCards.push(c); });
+      d.cards = newCards;
+    }catch(e){}
+  });
+}
+
+function renderSections(sections, hasMap){
+  let h='';
+  sections.forEach(s=>{
+    h+='<div class="card"><div class="card-h"><span class="ico">'+s.ico+'</span>'+s.title+'</div><div class="card-b">';
+    if(s.items){
+      if(typeof s.items[0]==='string'){
+        h+= '<ul style="padding-left:18px">'+s.items.map(x=>'<li style="margin:4px 0">'+x+'</li>').join('')+'</ul>';
+      } else {
+        h+= s.items.map(foodHtml).join('');
+      }
+    }
+    h+='</div></div>';
+  });
+  return h;
+}
+function renderFood(){setNav('food');tabsEl.classList.add('hidden');
+  main.innerHTML='<div class="dayhead"><span class="big">🍜 美食特輯</span></div>'+renderSections(FOOD_SECTIONS);window.scrollTo(0,0);}
+function renderBuy(){setNav('buy');tabsEl.classList.add('hidden');
+  main.innerHTML='<div class="dayhead"><span class="big">🎁 採買・伴手禮</span></div>'+renderSections(BUY_SECTIONS);window.scrollTo(0,0);}
+function renderKonbini(){setNav('konbini');tabsEl.classList.add('hidden');
+  main.innerHTML='<div class="dayhead"><span class="big">🏪 超商必買</span></div>'+renderSections(KONBINI);window.scrollTo(0,0);}
+
+/* ================= AI HELPER 小幫手 ================= */
+let chatHistory=[];
+function getAICfg(){return {provider:localStorage.getItem('fuk_ai_provider')||'gemini',key:localStorage.getItem('fuk_ai_key')||'',model:localStorage.getItem('fuk_ai_model')||''};}
+function defModel(p){return p==='openai'?'gpt-4o-mini':'gemini-2.0-flash';}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function buildContext(){
+  let s='你是「跟著 Young 走不會錯 - 福岡 7 日遊」的隨行旅遊小幫手（2026/7/16–7/22，住博多祇園櫛田神社前西鐵克魯姆酒店，地鐵七隈線櫛田神社前站）。請一律用繁體中文、親切且簡潔回答，盡量根據以下行程資料；若超出範圍可用常識補充但標註（參考建議）。切勿提及任何密碼、銀行或付款等私人資訊。\n\n=== 每日行程 ===\n';
+  DAYS.forEach(d=>{
+    s+='◆ '+d.date+'（'+d.dow+'）'+d.theme+'\n';
+    d.cards.forEach(c=>{
+      const parts=[];
+      (c.steps||[]).forEach(x=>parts.push(x.t+(x.meta?'（'+x.meta.replace(/<[^>]+>/g,'')+'）':'')));
+      (c.foods||[]).forEach(x=>parts.push(x.n+(x.d?'（'+x.d+'）':'')));
+      if(parts.length) s+='  - '+c.h+'：'+parts.join('；')+'\n';
+      (c.notes||[]).forEach(n=>s+='    注意：'+n.replace(/<[^>]+>/g,'')+'\n');
+    });
+  });
+  s+='\n=== 美食特輯 ===\n';FOOD_SECTIONS.forEach(sec=>{s+=sec.title+'：'+sec.items.map(i=>i.n+(i.d?'('+i.d+')':'')).join('、')+'\n';});
+  s+='\n=== 伴手禮/採買 ===\n';BUY_SECTIONS.forEach(sec=>{s+=sec.title+'：'+sec.items.map(i=>i.n).join('、')+'\n';});
+  s+='\n=== 超商必買 ===\n';KONBINI.forEach(sec=>{if(typeof sec.items[0]==='string')s+=sec.title+'：'+sec.items.join('、')+'\n';});
+  s+='\n=== 內幕提醒 ===\n';for(const k in TIPS){s+=k+'：'+TIPS[k].map(t=>t.x).join(' / ')+'\n';}
+  s+='\n=== 景點簡介 ===\n';for(const k in GUIDE){s+=k+'：'+GUIDE[k].zh+'\n';}
+  return s;
+}
+function renderHelper(){
+  setNav('helper'); tabsEl.classList.add('hidden');
+  const cfg=getAICfg();
+  if(!cfg.key){ showAISettings(); } else { showChat(); }
+  window.scrollTo(0,0);
+}
+function showAISettings(){
+  const cfg=getAICfg();
+  main.innerHTML='<div class="dayhead"><span class="big">🤖 旅遊小幫手</span></div>'+
+   '<div class="card"><div class="card-b">'+
+   '<p style="font-size:13px;color:var(--g600);margin-bottom:6px">輸入你自己的 AI API Key，就能隨時詢問這趟旅程的任何問題（哪天去哪、怎麼搭車、附近吃什麼…）。<b>Key 只存在這支手機，不會上傳。</b></p>'+
+   '<label class="flbl">AI 服務商</label>'+
+   '<select id="aiProv" class="fld"><option value="gemini"'+(cfg.provider==='gemini'?' selected':'')+'>Google Gemini（免費申請）</option><option value="openai"'+(cfg.provider==='openai'?' selected':'')+'>OpenAI（ChatGPT）</option></select>'+
+   '<label class="flbl">API Key</label>'+
+   '<input id="aiKey" class="fld" type="password" placeholder="貼上你的 API Key" value="'+esc(cfg.key)+'">'+
+   '<label class="flbl">模型（可留白用預設）</label>'+
+   '<input id="aiModel" class="fld" placeholder="預設 gemini-2.0-flash / gpt-4o-mini" value="'+esc(cfg.model)+'">'+
+   '<button class="btn" id="aiSave" style="margin-top:10px;width:100%">儲存並開始聊天</button>'+
+   '<div class="note" style="margin-top:12px">申請免費 Gemini Key：Google 搜尋「Google AI Studio」→ 登入 →「Get API key」。<br>OpenAI Key：platform.openai.com →「API keys」（需綁定付費）。</div>'+
+   '</div></div>';
+  document.getElementById('aiSave').onclick=()=>{
+    const p=document.getElementById('aiProv').value;
+    const k=document.getElementById('aiKey').value.trim();
+    const m=document.getElementById('aiModel').value.trim();
+    if(!k){alert('請先貼上 API Key');return;}
+    localStorage.setItem('fuk_ai_provider',p);localStorage.setItem('fuk_ai_key',k);localStorage.setItem('fuk_ai_model',m);
+    chatHistory=[]; showChat();
+  };
+}
+const CHIPS=['明天去哪裡？','太宰府怎麼去？','飯店附近晚上吃什麼？','由布院必買伴手禮？','哪些店要先電話預約？','雨天有什麼室內景點？'];
+function showChat(){
+  const cfg=getAICfg();
+  main.innerHTML='<div class="dayhead"><span class="big">🤖 旅遊小幫手</span>'+
+    '<span class="mini" style="color:var(--g500)">'+(cfg.provider==='openai'?'OpenAI':'Gemini')+'</span>'+
+    '<button class="gbtn" style="margin-left:auto" onclick="showAISettings()">⚙️ 設定</button></div>'+
+    '<div class="chipRow">'+CHIPS.map(c=>'<button class="chip" onclick="chipAsk(this)">'+c+'</button>').join('')+'</div>'+
+    '<div id="chatMsgs" class="chatMsgs"></div>'+
+    '<div class="chatBar"><input id="chatInput" class="chatInput" placeholder="問我任何旅程問題…" autocomplete="off"><button class="chatSend" id="chatSend">➤</button></div>';
+  if(chatHistory.length===0) chatHistory.push({role:'assistant',text:'嗨！我是你的福岡隨行小幫手 🗾 行程、交通、美食問題都可以問我～'});
+  paintChat();
+  const inp=document.getElementById('chatInput');
+  document.getElementById('chatSend').onclick=sendChat;
+  inp.onkeydown=e=>{if(e.key==='Enter')sendChat();};
+}
+function chipAsk(b){ const inp=document.getElementById('chatInput'); if(inp){inp.value=b.textContent; sendChat();} }
+function paintChat(){
+  const el=document.getElementById('chatMsgs'); if(!el)return;
+  el.innerHTML=chatHistory.map(m=>'<div class="msg '+(m.role==='user'?'u':'a')+'">'+esc(m.text).replace(/\n/g,'<br>')+'</div>').join('');
+  el.scrollTop=el.scrollHeight;
+}
+async function sendChat(){
+  const inp=document.getElementById('chatInput'); if(!inp)return;
+  const text=inp.value.trim(); if(!text)return; inp.value='';
+  const cfg=getAICfg(); if(!cfg.key){showAISettings();return;}
+  chatHistory.push({role:'user',text});
+  const ph={role:'assistant',text:'⏳ 思考中…'}; chatHistory.push(ph); paintChat();
+  try{
+    const prior=chatHistory.slice(0,-2);
+    ph.text=await callAI(cfg, buildContext(), prior, text);
+  }catch(e){ ph.text='⚠️ 出錯了：'+e.message+'\n（請檢查 API Key／網路，或到 ⚙️ 設定更換）'; }
+  paintChat();
+}
+async function callAI(cfg,sys,hist,user){
+  const model=cfg.model||defModel(cfg.provider);
+  if(cfg.provider==='openai') return callOpenAI(cfg.key,model,sys,hist,user);
+  return callGemini(cfg.key,model,sys,hist,user);
+}
+async function callGemini(key,model,sys,hist,user){
+  const contents=hist.map(m=>({role:m.role==='assistant'?'model':'user',parts:[{text:m.text}]}));
+  contents.push({role:'user',parts:[{text:user}]});
+  const body={system_instruction:{parts:[{text:sys}]},contents:contents,generationConfig:{temperature:0.4}};
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent?key='+encodeURIComponent(key),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  const j=await r.json();
+  if(!r.ok) throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
+  return (j.candidates&&j.candidates[0]&&j.candidates[0].content&&j.candidates[0].content.parts&&j.candidates[0].content.parts[0].text)||'(沒有回應內容)';
+}
+async function callOpenAI(key,model,sys,hist,user){
+  const messages=[{role:'system',content:sys}];
+  hist.forEach(m=>messages.push({role:m.role,content:m.text}));
+  messages.push({role:'user',content:user});
+  const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:messages,temperature:0.4})});
+  const j=await r.json();
+  if(!r.ok) throw new Error((j.error&&j.error.message)||('HTTP '+r.status));
+  return (j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'(沒有回應內容)';
+}
+
+/* ---- PIN logic ---- */
+function renderPrivate(){
+  setNav('private'); tabsEl.classList.add('hidden');
+  const saved = localStorage.getItem('fuk_pin');
+  if(sessionUnlocked){ showPrivate(); return; }
+  if(!saved){ showSetPin(); } else { showEnterPin(); }
+  window.scrollTo(0,0);
+}
+let sessionUnlocked=false;
+
+function pinInputs(){
+  return '<div class="pinbox">'+[0,1,2,3].map(i=>'<input id="p'+i+'" type="tel" inputmode="numeric" maxlength="1" autocomplete="off">').join('')+'</div>';
+}
+function wirePins(cb){
+  const ins=[0,1,2,3].map(i=>document.getElementById('p'+i));
+  ins.forEach((inp,i)=>{
+    inp.oninput=()=>{ inp.value=inp.value.replace(/[^0-9]/g,''); if(inp.value&&i<3)ins[i+1].focus(); if(i===3&&inp.value)cb(ins.map(x=>x.value).join('')); };
+    inp.onkeydown=(e)=>{ if(e.key==='Backspace'&&!inp.value&&i>0)ins[i-1].focus(); if(e.key==='Enter')cb(ins.map(x=>x.value).join('')); };
+  });
+  ins[0].focus();
+  return ()=>ins.map(x=>x.value).join('');
+}
+function showSetPin(){
+  main.innerHTML='<div class="card"><div class="lockwrap"><div class="lk">🔐</div>'+
+    '<h2>設定你的 PIN 碼</h2><p>第一次使用，請設定一組 4 位數密碼。<br>此密碼只存在這支手機，不會上傳網路。</p>'+
+    pinInputs()+'<div class="errmsg" id="err"></div>'+
+    '<button class="btn" id="setBtn">設定密碼</button></div></div>';
+  const getv=wirePins(()=>{});
+  document.getElementById('setBtn').onclick=()=>{
+    const v=getv();
+    if(v.length!==4){document.getElementById('err').textContent='請輸入 4 位數字';return;}
+    localStorage.setItem('fuk_pin',v); sessionUnlocked=true; showPrivate();
+  };
+}
+function showEnterPin(){
+  main.innerHTML='<div class="card"><div class="lockwrap"><div class="lk">🔒</div>'+
+    '<h2>私人資訊</h2><p>請輸入 4 位數 PIN 碼解鎖<br><span class="mini">密碼、包車與付款資訊</span></p>'+
+    pinInputs()+'<div class="errmsg" id="err"></div>'+
+    '<div style="display:flex;gap:8px;justify-content:center">'+
+    '<button class="btn" id="okBtn">解鎖</button>'+
+    '<button class="btn ghost" id="rstBtn">忘記密碼</button></div></div></div>';
+  const check=(v)=>{ if(v===localStorage.getItem('fuk_pin')){sessionUnlocked=true;showPrivate();}
+    else{document.getElementById('err').textContent='密碼錯誤，再試一次';[0,1,2,3].forEach(i=>document.getElementById('p'+i).value='');document.getElementById('p0').focus();} };
+  const getv=wirePins(check);
+  document.getElementById('okBtn').onclick=()=>check(getv());
+  document.getElementById('rstBtn').onclick=()=>{
+    if(confirm('重設密碼會清除目前 PIN（不影響資料內容），確定？')){localStorage.removeItem('fuk_pin');showSetPin();}
+  };
+}
+function pv(id){return localStorage.getItem('fuk_pv_'+id)||'';}
+function showPrivate(){
+  let h='<div class="dayhead"><span class="big">🔓 私人資訊</span>'+
+    '<span class="mini" style="color:var(--g500)">・僅存這支手機</span></div>';
+  h+='<div class="note">這裡的欄位<b>由你自己填寫</b>，只會存在這支手機的瀏覽器（localStorage），<b>不會上傳、不會外流</b>。填完按「💾 儲存」。</div>';
+  PRIVATE_FIELDS.forEach(s=>{
+    h+='<div class="card"><div class="card-h"><span class="ico">'+s.ico+'</span>'+s.title+'</div><div class="card-b">';
+    s.fields.forEach(f=>{
+      h+='<label class="flbl">'+f.label+'</label>';
+      if(f.ml) h+='<textarea class="fld" data-pv="'+f.id+'" rows="2" placeholder="（自行填寫）">'+esc(pv(f.id))+'</textarea>';
+      else h+='<input class="fld" data-pv="'+f.id+'" placeholder="（自行填寫）" value="'+esc(pv(f.id))+'">';
+    });
+    h+='</div></div>';
+  });
+  h+='<div style="display:flex;gap:8px;justify-content:center;margin:6px 0 4px">'+
+     '<button class="btn" id="pvSave">💾 儲存</button>'+
+     '<button class="btn ghost" onclick="sessionUnlocked=false;renderPrivate()">🔒 重新鎖定</button></div>';
+  main.innerHTML=h; window.scrollTo(0,0);
+  document.getElementById('pvSave').onclick=()=>{
+    document.querySelectorAll('[data-pv]').forEach(el=>localStorage.setItem('fuk_pv_'+el.dataset.pv, el.value));
+    const b=document.getElementById('pvSave'); b.textContent='✅ 已儲存'; setTimeout(()=>{b.textContent='💾 儲存';},1500);
+  };
+}
+
+/* ---- 備品 checklist ---- */
+function loadPackList(){
+  const saved = localStorage.getItem('fuk_pack');
+  if(saved){
+    try{
+      const list = JSON.parse(saved);
+      list.forEach(it=>{ if(typeof it.q!=='number' || it.q<1) it.q=1; });
+      return list;
+    }catch(e){}
+  }
+  const list = PACK_DEFAULT.map((t,i)=>({id:'d'+i, t:t, c:false, q:1}));
+  savePackList(list);
+  return list;
+}
+function savePackList(list){ localStorage.setItem('fuk_pack', JSON.stringify(list)); }
+function renderPack(){
+  setNav('pack'); tabsEl.classList.add('hidden');
+  const list = loadPackList();
+  const done = list.filter(x=>x.c).length;
+  const pct = list.length ? Math.round(done/list.length*100) : 0;
+  let h = '<div class="dayhead"><span class="big">🎒 備品清單</span>'+
+    '<span class="mini" style="color:var(--g500)">・僅存這支手機</span></div>';
+  h += '<div class="card"><div class="card-b">';
+  h += '<div class="packprog">已準備 '+done+' / '+list.length+'（'+pct+'%）</div>';
+  h += '<div class="packbar"><div class="packbar-fill" style="width:'+pct+'%"></div></div>';
+  h += '<div class="packadd"><input id="packInput" placeholder="新增品項，例如：泳衣" maxlength="40">'+
+       '<button class="btn" id="packAddBtn">➕ 新增</button></div>';
+  h += '</div></div>';
+  h += '<div class="card"><div class="card-b" id="packListBox">';
+  if(!list.length){
+    h += '<div class="note">目前沒有品項，上面輸入框新增第一個吧。</div>';
+  } else {
+    list.forEach(item=>{
+      h += '<div class="packrow'+(item.c?' checked':'')+'" data-id="'+item.id+'">'+
+        '<input type="checkbox" '+(item.c?'checked':'')+'>'+
+        '<span class="ptxt">'+esc(item.t)+'</span>'+
+        '<span class="qtybox">'+
+          '<button class="qtybtn" data-d="-1">−</button>'+
+          '<span class="qtyval">×'+item.q+'</span>'+
+          '<button class="qtybtn" data-d="1">＋</button>'+
+        '</span>'+
+        '<button class="packdel">✕</button></div>';
+    });
+  }
+  h += '</div></div>';
+  if(list.length){
+    h += '<div style="display:flex;justify-content:center;margin:6px 0 4px">'+
+      '<button class="resetbtn" id="packClearBtn">↺ 全部取消勾選</button></div>';
+  }
+  main.innerHTML = h; window.scrollTo(0,0);
+
+  document.getElementById('packAddBtn').onclick=addPackItem;
+  document.getElementById('packInput').onkeydown=(e)=>{ if(e.key==='Enter') addPackItem(); };
+  document.querySelectorAll('#packListBox .packrow').forEach(row=>{
+    const id=row.dataset.id;
+    row.querySelector('input[type=checkbox]').onchange=(e)=>togglePackItem(id, e.target.checked);
+    row.querySelector('.packdel').onclick=()=>deletePackItem(id);
+    row.querySelectorAll('.qtybtn').forEach(btn=>{
+      btn.onclick=()=>changePackQty(id, parseInt(btn.dataset.d,10));
+    });
+  });
+}
+function addPackItem(){
+  const inp = document.getElementById('packInput');
+  const t = inp.value.trim();
+  if(!t) return;
+  const list = loadPackList();
+  list.push({id:'u'+Date.now(), t:t, c:false, q:1});
+  savePackList(list);
+  renderPack();
+}
+function togglePackItem(id, checked){
+  const list = loadPackList();
+  const it = list.find(x=>x.id===id);
+  if(it){ it.c = checked; savePackList(list); }
+  const row = document.querySelector('#packListBox .packrow[data-id="'+id+'"]');
+  if(row) row.classList.toggle('checked', checked);
+  const done = list.filter(x=>x.c).length, pct = list.length ? Math.round(done/list.length*100) : 0;
+  const prog = document.querySelector('.packprog'); if(prog) prog.textContent='已準備 '+done+' / '+list.length+'（'+pct+'%）';
+  const fill = document.querySelector('.packbar-fill'); if(fill) fill.style.width = pct+'%';
+}
+function changePackQty(id, delta){
+  const list = loadPackList();
+  const it = list.find(x=>x.id===id);
+  if(!it) return;
+  it.q = Math.max(1, (it.q||1) + delta);
+  savePackList(list);
+  const row = document.querySelector('#packListBox .packrow[data-id="'+id+'"]');
+  if(row){ const val = row.querySelector('.qtyval'); if(val) val.textContent = '×'+it.q; }
+}
+function deletePackItem(id){
+  let list = loadPackList();
+  list = list.filter(x=>x.id!==id);
+  savePackList(list);
+  renderPack();
+}
+document.addEventListener('click', (e)=>{
+  if(e.target && e.target.id==='packClearBtn'){
+    const list = loadPackList().map(x=>({...x, c:false}));
+    savePackList(list);
+    renderPack();
+  }
+});
+
+/* ---- nav ---- */
+let curView='days';
+function setNav(v){
+  curView=v;
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===v));
+  if(v==='days')tabsEl.classList.remove('hidden');
+  const fab=document.getElementById('fabLoc'); if(fab) fab.style.display=(v==='helper')?'none':'';
+}
+function rerender(){
+  if(curView==='days')renderDays();
+  else if(curView==='food')renderFood();
+  else if(curView==='buy')renderBuy();
+  else if(curView==='konbini')renderKonbini();
+  else if(curView==='pack')renderPack();
+  else if(curView==='private')renderPrivate();
+}
+
+/* ---- travel mode ---- */
+function paintMode(){
+  document.querySelectorAll('.mbtn').forEach(b=>b.classList.toggle('active',b.dataset.m===travelMode));
+}
+document.querySelectorAll('.mbtn').forEach(b=>b.onclick=()=>{
+  travelMode=b.dataset.m; localStorage.setItem('fuk_mode',travelMode); paintMode(); rerender();
+});
+paintMode();
+
+/* ---- where am I (GPS) ---- */
+document.getElementById('fabLoc').onclick=function(){
+  const fab=this;
+  if(!navigator.geolocation){ window.open('https://www.google.com/maps','_blank'); return; }
+  fab.classList.add('busy'); fab.textContent='📡 定位中…';
+  navigator.geolocation.getCurrentPosition(
+    p=>{ fab.classList.remove('busy'); fab.textContent='🧭 我在哪';
+      const {latitude:la,longitude:lo}=p.coords;
+      window.open('https://www.google.com/maps/search/?api=1&query='+la+','+lo,'_blank'); },
+    err=>{ fab.classList.remove('busy'); fab.textContent='🧭 我在哪';
+      alert('無法取得定位。\n請確認已允許定位權限，或在手機的 Google 地圖 App 直接查看目前位置。');
+      window.open('https://www.google.com/maps','_blank'); },
+    {enableHighAccuracy:true, timeout:8000, maximumAge:60000}
+  );
+};
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
+  const v=b.dataset.view;
+  if(v==='days')renderDays();
+  else if(v==='food')renderFood();
+  else if(v==='buy')renderBuy();
+  else if(v==='konbini')renderKonbini();
+  else if(v==='pack')renderPack();
+  else if(v==='helper')renderHelper();
+  else if(v==='private')renderPrivate();
+});
+
+/* init */
+applySavedOrder();
+renderDays();
+
+/* PWA offline support */
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
