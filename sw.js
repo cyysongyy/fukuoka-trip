@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fukuoka-trip-v4';
+const CACHE_NAME = 'fukuoka-trip-v5';
 const ASSETS = [
   './',
   './福岡7日遊.html',

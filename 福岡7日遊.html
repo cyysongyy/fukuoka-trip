@@ -59,7 +59,7 @@ main{padding:14px 12px 20px;max-width:640px;margin:0 auto}
 .ordbtn{background:var(--card);border:1px solid var(--g200);border-radius:8px;width:28px;height:28px;font-size:13px;display:flex;align-items:center;justify-content:center;color:var(--g600);cursor:pointer;flex-shrink:0}
 .ordbtn:active{background:var(--g100)}
 .ordbtn:disabled{opacity:.25}
-.daytools{display:flex;justify-content:flex-end;margin:2px 0 10px}
+.daytools{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:2px 0 10px;flex-wrap:wrap}
 .resetbtn{font-size:12px;color:var(--g600);background:none;border:none;text-decoration:underline;cursor:pointer;padding:4px}
 .packrow{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px solid var(--g100)}
 .packrow:last-child{border-bottom:none}
@@ -74,6 +74,10 @@ main{padding:14px 12px 20px;max-width:640px;margin:0 auto}
 .packadd{display:flex;gap:8px;margin-top:4px}
 .packadd input{flex:1;border:1px solid var(--g200);border-radius:10px;padding:10px 12px;font-size:15px}
 .packadd button{flex-shrink:0}
+.geobadge{margin-left:6px;font-size:11px;font-weight:700;border:1px solid var(--g200);background:var(--card);color:var(--g600);border-radius:99px;padding:3px 9px;cursor:pointer;flex-shrink:0}
+.geobadge.visited{background:#ecfdf5;border-color:#a7f3d0;color:var(--ok)}
+.geotoast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1c1917;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 6px 18px rgba(0,0,0,.25);opacity:0;transition:opacity .3s}
+.geotoast.show{opacity:1}
 .packprog{font-size:13px;color:var(--g600);margin-bottom:8px}
 .packbar{height:6px;background:var(--g100);border-radius:99px;overflow:hidden;margin-bottom:14px}
 .packbar-fill{height:100%;background:var(--ok);border-radius:99px;transition:width .2s}
@@ -646,6 +650,20 @@ const DAYS = [
 /* pristine copy for "還原順序" reset */
 const ORIGINAL_DAYS = JSON.parse(JSON.stringify(DAYS));
 
+/* ---------- GPS 自動打卡地標（座標為概略位置，可自行微調） ---------- */
+const GEO_CHECKPOINTS = [
+ {day:'7/16', card:'住宿 · ホテル', name:'博多祇園櫛田神社前飯店', lat:33.5928, lon:130.4106, r:400},
+ {day:'7/17', card:'景點 · 観光', name:'湯布院（金鱗湖一帶）', lat:33.2649, lon:131.3696, r:900},
+ {day:'7/18', card:'門司港 · 觀光美食', name:'門司港懷舊區', lat:33.9469, lon:130.9629, r:700},
+ {day:'7/18', card:'皿倉山夜景 · 夜景', name:'皿倉山山頂展望台', lat:33.8722, lon:130.8256, r:600},
+ {day:'7/19', card:'行程 · コース', name:'太宰府天滿宮', lat:33.5192, lon:130.5352, r:600},
+ {day:'7/20', card:'行程路線 · コース', name:'阿蘇火山一帶', lat:32.8845, lon:131.1044, r:3000},
+ {day:'7/21', card:'行程路線 · コース', name:'糸島海岸一帶', lat:33.5804, lon:130.1108, r:3000},
+ {day:'7/22', card:'上午 · 午前', name:'大濠公園', lat:33.5847, lon:130.3794, r:600},
+ {day:'7/22', card:'博多車站 · 最後採買', name:'博多車站', lat:33.5895, lon:130.4207, r:500},
+ {day:'7/22', card:'福岡機場必買 · 空港', name:'福岡機場', lat:33.5859, lon:130.4510, r:700},
+];
+
 /* ---------- FOOD PAGE (specials) ---------- */
 const FOOD_SECTIONS = [
  {ico:'🍜',title:'拉麵特輯',items:[
@@ -794,12 +812,20 @@ function foodHtml(f){
 function renderDays(){
   setNav('days'); buildDayTabs();
   const d = DAYS[curDay];
+  const gpsOn = localStorage.getItem('fuk_gps_on')==='1';
   let h = '<div class="dayhead"><span class="big">'+d.date+'（'+d.dow+'）</span>'+
     '<span class="theme">'+d.theme+'</span><span class="jp">'+d.jp+'</span></div>';
-  h += '<div class="daytools"><button class="resetbtn" onclick="resetOrder()">↺ 還原本日原始順序</button></div>';
+  h += '<div class="daytools">'+
+    '<button class="resetbtn" id="gpsToggleBtn">'+(gpsOn?'📍 GPS 自動打卡：開':'📍 GPS 自動打卡：關')+'</button>'+
+    '<button class="resetbtn" onclick="resetOrder()">↺ 還原本日原始順序</button>'+
+    '</div>';
+  if(gpsOn) h += '<div class="note" style="margin-bottom:10px">GPS 追蹤中，經過下方標註 📍 的地點附近會自動打上 ✅ 已到訪（App 需保持開啟在前景）。</div>';
   d.cards.forEach((c,idx)=>{
     const isFirst = idx===0, isLast = idx===d.cards.length-1;
+    const cp = GEO_CHECKPOINTS.find(x=>x.day===d.date && x.card===c.h);
+    const visited = cp && isVisited(d.date, c.h);
     h += '<div class="card"><div class="card-h"><span class="cardnum">'+(idx+1)+'</span><span class="ico">'+c.ico+'</span>'+c.h+
+      (cp ? '<button class="geobadge'+(visited?' visited':'')+'" onclick="toggleVisited(\''+d.date+'\',\''+escAttr(c.h)+'\')">'+(visited?'✅ 已到訪':'📍 未到訪')+'</button>' : '')+
       '<span class="reorder-btns">'+
         '<button class="ordbtn" onclick="moveCard('+idx+',-1)"'+(isFirst?' disabled':'')+'>▲</button>'+
         '<button class="ordbtn" onclick="moveCard('+idx+',1)"'+(isLast?' disabled':'')+'>▼</button>'+
@@ -810,7 +836,10 @@ function renderDays(){
     h += '</div></div>';
   });
   main.innerHTML = h; window.scrollTo(0,0);
+  const gbtn = document.getElementById('gpsToggleBtn');
+  if(gbtn) gbtn.onclick = toggleGPS;
 }
+function escAttr(s){ return String(s).replace(/'/g,"\\'"); }
 function saveOrder(d){
   localStorage.setItem('fuk_order_'+d.date, JSON.stringify(d.cards.map(c=>c.h)));
 }
@@ -843,6 +872,87 @@ function applySavedOrder(){
     }catch(e){}
   });
 }
+
+/* ---- GPS 自動打卡 ---- */
+let gpsWatchId = null;
+function loadVisited(){
+  try{ return JSON.parse(localStorage.getItem('fuk_visited')||'{}'); }catch(e){ return {}; }
+}
+function saveVisited(obj){ localStorage.setItem('fuk_visited', JSON.stringify(obj)); }
+function visitedKey(day, card){ return day+'|'+card; }
+function isVisited(day, card){ return !!loadVisited()[visitedKey(day, card)]; }
+function toggleVisited(day, card){
+  const v = loadVisited();
+  const k = visitedKey(day, card);
+  v[k] = !v[k];
+  saveVisited(v);
+  renderDays();
+}
+function distMeters(lat1, lon1, lat2, lon2){
+  const R = 6371000, toRad = x=>x*Math.PI/180;
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+function showGeoToast(msg){
+  let t = document.getElementById('geoToast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'geoToast'; t.className = 'geotoast';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(()=>t.classList.remove('show'), 3200);
+}
+function onGpsPosition(pos){
+  const { latitude, longitude } = pos.coords;
+  const v = loadVisited();
+  let changed = false, newlyVisitedNames = [];
+  GEO_CHECKPOINTS.forEach(cp=>{
+    const k = visitedKey(cp.day, cp.card);
+    if(v[k]) return;
+    const dist = distMeters(latitude, longitude, cp.lat, cp.lon);
+    if(dist <= cp.r){
+      v[k] = true; changed = true; newlyVisitedNames.push(cp.name);
+    }
+  });
+  if(changed){
+    saveVisited(v);
+    showGeoToast('✅ 已自動標記到訪：'+newlyVisitedNames.join('、'));
+    if(curView==='days') renderDays();
+  }
+}
+function onGpsError(err){
+  showGeoToast('⚠️ 定位失敗，請檢查定位權限');
+  localStorage.setItem('fuk_gps_on', '0');
+  if(curView==='days') renderDays();
+}
+function startGpsWatch(){
+  if(!('geolocation' in navigator)){ showGeoToast('⚠️ 此裝置不支援定位'); return; }
+  if(gpsWatchId !== null) return;
+  gpsWatchId = navigator.geolocation.watchPosition(onGpsPosition, onGpsError, {
+    enableHighAccuracy: true, maximumAge: 15000, timeout: 20000
+  });
+}
+function stopGpsWatch(){
+  if(gpsWatchId !== null){ navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; }
+}
+function toggleGPS(){
+  const on = localStorage.getItem('fuk_gps_on')==='1';
+  if(on){
+    stopGpsWatch();
+    localStorage.setItem('fuk_gps_on', '0');
+    showGeoToast('📍 GPS 自動打卡已關閉');
+  } else {
+    localStorage.setItem('fuk_gps_on', '1');
+    startGpsWatch();
+    showGeoToast('📍 GPS 自動打卡已開啟');
+  }
+  renderDays();
+}
+
 
 function renderSections(sections, hasMap){
   let h='';
@@ -1208,6 +1318,7 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
 /* init */
 applySavedOrder();
 renderDays();
+if(localStorage.getItem('fuk_gps_on')==='1'){ startGpsWatch(); }
 
 /* PWA offline support */
 if('serviceWorker' in navigator){
