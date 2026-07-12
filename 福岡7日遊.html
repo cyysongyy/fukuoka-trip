@@ -1174,6 +1174,37 @@ function loadPackList(){
   return list;
 }
 function savePackList(list){ localStorage.setItem('fuk_pack', JSON.stringify(list)); }
+
+/* ---- 備份／還原（行程排序、備品、GPS 打卡皆一併備份） ---- */
+function exportBackup(){
+  const data = {};
+  for(let i=0;i<localStorage.length;i++){
+    const k = localStorage.key(i);
+    if(k && k.indexOf('fuk_')===0) data[k] = localStorage.getItem(k);
+  }
+  const json = JSON.stringify(data);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(json).then(()=>{
+      showGeoToast('📤 備份已複製，貼到備忘錄保存起來');
+    }).catch(()=>{ window.prompt('請手動複製以下備份內容：', json); });
+  } else {
+    window.prompt('請手動複製以下備份內容：', json);
+  }
+}
+function importBackup(){
+  const json = window.prompt('請貼上先前匯出的備份內容：');
+  if(!json) return;
+  try{
+    const data = JSON.parse(json);
+    Object.keys(data).forEach(k=>{
+      if(k.indexOf('fuk_')===0) localStorage.setItem(k, data[k]);
+    });
+    showGeoToast('✅ 已還原備份，重新整理中…');
+    setTimeout(()=>location.reload(), 900);
+  }catch(e){
+    showGeoToast('⚠️ 備份內容格式錯誤，無法還原');
+  }
+}
 function renderPack(){
   setNav('pack'); tabsEl.classList.add('hidden');
   const list = loadPackList();
@@ -1186,6 +1217,11 @@ function renderPack(){
   h += '<div class="packbar"><div class="packbar-fill" style="width:'+pct+'%"></div></div>';
   h += '<div class="packadd"><input id="packInput" placeholder="新增品項，例如：泳衣" maxlength="40">'+
        '<button class="btn" id="packAddBtn">➕ 新增</button></div>';
+  h += '<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">'+
+       '<button class="resetbtn" id="exportBackupBtn">📤 匯出備份</button>'+
+       '<button class="resetbtn" id="importBackupBtn">📥 匯入備份</button>'+
+       '</div>';
+  h += '<div class="note" style="margin-top:8px">備份會把行程排序、備品清單、GPS 打卡紀錄一起存成一段文字，建議貼到「備忘錄」App 保存，換手機或不小心清掉資料時可以還原。</div>';
   h += '</div></div>';
   h += '<div class="card"><div class="card-b" id="packListBox">';
   if(!list.length){
@@ -1212,6 +1248,8 @@ function renderPack(){
 
   document.getElementById('packAddBtn').onclick=addPackItem;
   document.getElementById('packInput').onkeydown=(e)=>{ if(e.key==='Enter') addPackItem(); };
+  document.getElementById('exportBackupBtn').onclick=exportBackup;
+  document.getElementById('importBackupBtn').onclick=importBackup;
   document.querySelectorAll('#packListBox .packrow').forEach(row=>{
     const id=row.dataset.id;
     row.querySelector('input[type=checkbox]').onchange=(e)=>togglePackItem(id, e.target.checked);
