@@ -1,6 +1,6 @@
 {
-  "name": "跟著 Young 走不會錯 - 福岡 7 日遊",
-  "short_name": "福岡7日遊",
+  "name": "跟我走，不會錯！",
+  "short_name": "跟我走不會錯",
   "start_url": "./福岡7日遊.html",
   "scope": "./",
   "display": "standalone",

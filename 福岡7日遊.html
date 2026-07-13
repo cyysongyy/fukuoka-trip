@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="福岡7日遊">
+<meta name="apple-mobile-web-app-title" content="跟我走不會錯">
 <meta name="theme-color" content="#e11d48">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="icon" href="icon-192.png">
-<title>跟著 Young 走不會錯 - 福岡 7 日遊 🗾</title>
+<title>跟我走，不會錯！ - 福岡 7 日遊 🗾</title>
 <style>
 :root{
   --pri:#e11d48; --pril:#ffe4e6; --prid:#9f1239;
@@ -79,6 +79,15 @@ main{padding:14px 12px 20px;max-width:640px;margin:0 auto}
 .geotoast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:#1c1917;color:#fff;padding:10px 18px;border-radius:99px;font-size:14px;font-weight:700;z-index:999;box-shadow:0 6px 18px rgba(0,0,0,.25);opacity:0;transition:opacity .3s}
 .geotoast.show{opacity:1}
 .packprog{font-size:13px;color:var(--g600);margin-bottom:8px}
+.triprow{padding:14px;border-bottom:1px solid var(--g100);cursor:pointer}
+.triprow:last-child{border-bottom:none}
+.triprow .tname{font-weight:800;font-size:16px}
+.triprow .tmeta{font-size:13px;color:var(--g600);margin-top:2px}
+.tripbar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.tripbar .back{background:var(--g100);border:none;border-radius:10px;padding:8px 12px;font-weight:700;font-size:13px;cursor:pointer}
+.ai-loading{display:flex;align-items:center;gap:8px;color:var(--g600);font-size:14px;padding:14px}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid var(--g200);border-top-color:var(--pri);border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
 .packbar{height:6px;background:var(--g100);border-radius:99px;overflow:hidden;margin-bottom:14px}
 .packbar-fill{height:100%;background:var(--ok);border-radius:99px;transition:width .2s}
 
@@ -133,8 +142,8 @@ a.tel{color:var(--pri);font-weight:700;text-decoration:none}
 
 /* bottom nav */
 nav{position:fixed;bottom:0;left:0;right:0;z-index:60;background:var(--card);border-top:1px solid var(--g200);
-  display:flex;padding:6px 4px 8px;box-shadow:0 -1px 6px rgba(0,0,0,.05)}
-nav button{flex:1;background:none;border:none;font-size:10px;font-weight:700;color:var(--g500);cursor:pointer;
+  display:flex;padding:6px 4px 8px;box-shadow:0 -1px 6px rgba(0,0,0,.05);overflow-x:auto}
+nav button{flex:1 0 auto;min-width:58px;background:none;border:none;font-size:10px;font-weight:700;color:var(--g500);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 2px}
 nav button .ni{font-size:20px}
 nav button.active{color:var(--pri)}
@@ -209,7 +218,7 @@ nav button.active{color:var(--pri)}
 <body>
 
 <header>
-  <h1>🗾 跟著 Young 走不會錯 <span style="font-weight:600;font-size:13px;opacity:.85">福岡 7 日遊 2026</span></h1>
+  <h1>🗾 跟我走，不會錯！ <span style="font-weight:600;font-size:13px;opacity:.85">福岡 7 日遊 2026</span></h1>
   <div class="sub">7/16（四）– 7/22（三）・博多祇園櫛田神社前西鐵克魯姆酒店</div>
 </header>
 
@@ -236,6 +245,7 @@ nav button.active{color:var(--pri)}
   <button data-view="buy"><span class="ni">🎁</span>採買</button>
   <button data-view="konbini"><span class="ni">🏪</span>超商</button>
   <button data-view="pack"><span class="ni">🎒</span>備品</button>
+  <button data-view="trips"><span class="ni">🧳</span>行程本</button>
   <button data-view="helper"><span class="ni">🤖</span>小幫手</button>
   <button data-view="private"><span class="ni">🔒</span>私人</button>
 </nav>
@@ -1180,6 +1190,273 @@ async function callOpenAI(key,model,sys,hist,user){
   return (j.choices&&j.choices[0]&&j.choices[0].message&&j.choices[0].message.content)||'(沒有回應內容)';
 }
 
+/* ================= 🧳 行程本：任何旅程都能用的萬能模板 ================= */
+/* 這裡是全新、獨立的資料區，不會動到上面福岡 7 日遊本身的任何行程安排 */
+let curTripId = null; // null = 列表頁；有值 = 該行程詳情頁
+
+function loadTripList(){
+  try{ return JSON.parse(localStorage.getItem('travel_trips')||'[]'); }catch(e){ return []; }
+}
+function saveTripList(list){ localStorage.setItem('travel_trips', JSON.stringify(list)); }
+function getTrip(id){ return loadTripList().find(t=>t.id===id); }
+function updateTrip(id, mutateFn){
+  const list = loadTripList();
+  const t = list.find(x=>x.id===id);
+  if(!t) return;
+  mutateFn(t);
+  saveTripList(list);
+}
+
+function renderTrips(){
+  setNav('trips'); tabsEl.classList.add('hidden');
+  if(curTripId){ renderTripDetail(curTripId); return; }
+  const list = loadTripList();
+  let h = '<div class="dayhead"><span class="big">🧳 行程本</span>'+
+    '<span class="mini" style="color:var(--g500)">・任何旅程都能建立、AI 幫你抓方向</span></div>';
+  h += '<div class="card"><div class="card-b">';
+  h += '<div class="note" style="margin-bottom:10px">跟福岡這趟行程是分開的獨立空間，這裡可以建立你未來任何一趟旅行，AI 會根據目的地、天數、季節幫你抓行程方向跟備品建議，抓好之後都能自己增刪修改。</div>';
+  h += '<button class="btn" id="newTripBtn" style="width:100%">➕ 建立新行程</button>';
+  h += '</div></div>';
+  if(!list.length){
+    h += '<div class="card"><div class="card-b"><div class="note">目前還沒有其他行程，點上面「建立新行程」開始第一趟吧。</div></div></div>';
+  } else {
+    h += '<div class="card"><div class="card-b" style="padding:0">';
+    list.forEach(t=>{
+      h += '<div class="triprow" data-id="'+t.id+'">'+
+        '<div class="tname">'+esc(t.name)+'</div>'+
+        '<div class="tmeta">📍 '+esc(t.dest)+'　🗓 '+esc(t.start)+' — '+esc(t.end)+'（'+(t.days?t.days.length:0)+' 天）</div>'+
+        '</div>';
+    });
+    h += '</div></div>';
+  }
+  main.innerHTML = h; window.scrollTo(0,0);
+  document.getElementById('newTripBtn').onclick = createNewTrip;
+  document.querySelectorAll('.triprow').forEach(row=>{
+    row.onclick = ()=>{ curTripId = row.dataset.id; renderTrips(); };
+  });
+}
+
+async function createNewTrip(){
+  const dest = window.prompt('目的地（例如：北海道、清邁、義大利托斯卡尼）：');
+  if(!dest || !dest.trim()) return;
+  const start = window.prompt('出發日期（YYYY-MM-DD）：');
+  if(!start) return;
+  const days = parseInt(window.prompt('總共幾天？', '5'), 10);
+  if(!days || days<1 || days>30){ alert('天數請輸入 1-30 的數字'); return; }
+  const prefs = window.prompt('補充需求（可留空）：例如同行人數、預算、喜歡自然還是城市、有無特殊體力/健康考量：', '') || '';
+
+  const cfg = getAICfg();
+  if(!cfg.key){
+    alert('請先到「🤖小幫手」頁面設定好 AI API Key，才能請 AI 幫忙規劃這趟行程。');
+    return;
+  }
+
+  const startDate = new Date(start);
+  if(isNaN(startDate.getTime())){ alert('日期格式請用 YYYY-MM-DD'); return; }
+  const endDate = new Date(startDate.getTime() + (days-1)*86400000);
+  const fmt = dt => dt.toISOString().slice(0,10);
+
+  const id = 't'+Date.now();
+  const name = dest.trim()+' '+days+'日遊';
+  const newTrip = { id, name, dest: dest.trim(), start: fmt(startDate), end: fmt(endDate), days: [], pack: [], notes:'' };
+  const list = loadTripList();
+  list.push(newTrip);
+  saveTripList(list);
+  curTripId = id;
+  renderTrips();
+  showAILoading('🤖 AI 正在依「'+dest.trim()+'」的季節、地形幫你規劃行程與備品，請稍候…');
+
+  try{
+    const plan = await requestTripPlan(cfg, dest.trim(), newTrip.start, days, prefs);
+    updateTrip(id, t=>{
+      t.days = plan.days || [];
+      t.pack = (plan.packing||[]).map((p,i)=>({id:'p'+i, t:(typeof p==='string'?p:p.t)||'', q:(p.q||1), c:false}));
+      t.notes = plan.notes || '';
+    });
+    showGeoToast('✅ 行程與備品建議都準備好了');
+  }catch(err){
+    showGeoToast('⚠️ AI 規劃失敗：'+err.message);
+  }
+  renderTrips();
+}
+
+function showAILoading(msg){
+  main.innerHTML = '<div class="ai-loading"><span class="spin"></span>'+esc(msg)+'</div>';
+}
+
+async function requestTripPlan(cfg, dest, start, days, prefs){
+  const sys = '你是專業旅遊規劃與行前準備顧問。請只回傳純 JSON（不要任何說明文字、不要 markdown code fence），格式必須完全符合：\n'+
+    '{"days":[{"date":"YYYY-MM-DD","theme":"當天主題","cards":[{"ico":"一個emoji","h":"項目標題","text":"具體內容說明，含建議景點/交通方式/用餐建議，2-4句"}]}],'+
+    '"packing":[{"t":"品項名稱","q":數量}],'+
+    '"notes":"整體提醒，100字內，需包含：當地當季氣候特性、地形特色（山區/海邊/城市/高海拔等）對應的準備重點，以及一般性藥物類別建議（例如腸胃藥、暈車藥、防蚊液、感冒藥、防曬用品等類別名稱即可，不要提供任何藥品的劑量、服用方式或處方建議，並提醒有慢性病或特殊需求者應自行諮詢醫師或藥師）"}\n'+
+    '每天安排 3-5 個 cards，涵蓋交通/景點/美食/住宿等面向，符合當地實際氣候與地形。';
+  const user = '目的地：'+dest+'\n出發日期：'+start+'\n天數：'+days+'\n其他需求：'+(prefs||'無')+
+    '\n\n請規劃這趟行程，並給出對應的備品建議與整體提醒（氣候/地形/藥物類別）。只回傳 JSON。';
+  const raw = await callAI(cfg, sys, [], user);
+  const cleaned = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+  let parsed;
+  try{ parsed = JSON.parse(cleaned); }
+  catch(e){
+    const m = cleaned.match(/\{[\s\S]*\}/);
+    if(!m) throw new Error('AI 回傳格式無法解析');
+    parsed = JSON.parse(m[0]);
+  }
+  return parsed;
+}
+
+function renderTripDetail(id){
+  const t = getTrip(id);
+  if(!t){ curTripId=null; renderTrips(); return; }
+  const done = (t.pack||[]).filter(x=>x.c).length;
+  const total = (t.pack||[]).length;
+  const pct = total ? Math.round(done/total*100) : 0;
+  let h = '<div class="tripbar"><button class="back" id="tripBackBtn">← 返回行程本</button></div>';
+  h += '<div class="dayhead"><span class="big">'+esc(t.name)+'</span>'+
+    '<span class="theme">📍 '+esc(t.dest)+'</span><span class="jp">🗓 '+esc(t.start)+' — '+esc(t.end)+'</span></div>';
+  if(t.notes) h += '<div class="card"><div class="card-b"><div class="note">🌤 '+esc(t.notes)+'</div></div></div>';
+  h += '<div class="daytools">'+
+    '<button class="resetbtn" id="addTripDayBtn">➕ 新增一天</button>'+
+    '<button class="resetbtn" id="regenTripBtn">🤖 重新請 AI 規劃</button>'+
+    '<button class="resetbtn" id="deleteTripBtn" style="color:var(--pri)">🗑 刪除此行程</button>'+
+    '</div>';
+
+  (t.days||[]).forEach((d,di)=>{
+    h += '<div class="card"><div class="card-h"><span class="cardnum">D'+(di+1)+'</span>'+esc(d.date||'')+'　'+esc(d.theme||'')+
+      '<span class="reorder-btns">'+
+        '<button class="ordbtn" onclick="addTripCard(\''+t.id+'\','+di+')">➕</button>'+
+        '<button class="ordbtn" onclick="deleteTripDay(\''+t.id+'\','+di+')">🗑</button>'+
+      '</span></div><div class="card-b">';
+    (d.cards||[]).forEach((c,ci)=>{
+      h += '<div class="packrow" style="align-items:flex-start">'+
+        '<span class="ptxt"><b>'+esc(c.ico||'📌')+' '+esc(c.h||'')+'</b><br><span style="color:var(--g600);font-size:13px">'+esc(c.text||'').replace(/\n/g,'<br>')+'</span></span>'+
+        '<button class="ordbtn" onclick="editTripCard(\''+t.id+'\','+di+','+ci+')">✏️</button>'+
+        '<button class="packdel" onclick="deleteTripCard(\''+t.id+'\','+di+','+ci+')">✕</button>'+
+        '</div>';
+    });
+    if(!(d.cards||[]).length) h += '<div class="note">這天還沒有項目，點上面 ➕ 新增。</div>';
+    h += '</div></div>';
+  });
+  if(!(t.days||[]).length) h += '<div class="card"><div class="card-b"><div class="note">還沒有任何一天的行程，點上面「➕ 新增一天」或「🤖 重新請 AI 規劃」開始。</div></div></div>';
+
+  h += '<div class="dayhead" style="margin-top:6px"><span class="theme">🎒 備品清單</span></div>';
+  h += '<div class="card"><div class="card-b">';
+  if(total){
+    h += '<div class="packprog">已準備 '+done+' / '+total+'（'+pct+'%）</div>';
+    h += '<div class="packbar"><div class="packbar-fill" style="width:'+pct+'%"></div></div>';
+  }
+  h += '<div class="packadd"><input id="tripPackInput" placeholder="新增品項"><button class="btn" id="tripPackAddBtn">➕ 新增</button></div>';
+  h += '</div></div>';
+  h += '<div class="card"><div class="card-b" id="tripPackBox">';
+  (t.pack||[]).forEach(item=>{
+    h += '<div class="packrow'+(item.c?' checked':'')+'" data-id="'+item.id+'">'+
+      '<input type="checkbox" '+(item.c?'checked':'')+'>'+
+      '<span class="ptxt">'+esc(item.t)+'</span>'+
+      '<span class="qtybox"><button class="qtybtn" data-d="-1">−</button><span class="qtyval">×'+item.q+'</span><button class="qtybtn" data-d="1">＋</button></span>'+
+      '<button class="packdel">✕</button></div>';
+  });
+  if(!total) h += '<div class="note">還沒有備品項目。</div>';
+  h += '</div></div>';
+
+  main.innerHTML = h; window.scrollTo(0,0);
+  document.getElementById('tripBackBtn').onclick = ()=>{ curTripId=null; renderTrips(); };
+  document.getElementById('addTripDayBtn').onclick = ()=>addTripDay(t.id);
+  document.getElementById('regenTripBtn').onclick = ()=>regenTripPlan(t.id);
+  document.getElementById('deleteTripBtn').onclick = ()=>deleteTrip(t.id);
+  document.getElementById('tripPackAddBtn').onclick = ()=>addTripPackItem(t.id);
+  document.getElementById('tripPackInput').onkeydown = e=>{ if(e.key==='Enter') addTripPackItem(t.id); };
+  document.querySelectorAll('#tripPackBox .packrow').forEach(row=>{
+    const pid = row.dataset.id;
+    row.querySelector('input[type=checkbox]').onchange = e=>toggleTripPackItem(t.id, pid, e.target.checked);
+    row.querySelector('.packdel').onclick = ()=>deleteTripPackItem(t.id, pid);
+    row.querySelectorAll('.qtybtn').forEach(btn=>{ btn.onclick=()=>changeTripPackQty(t.id, pid, parseInt(btn.dataset.d,10)); });
+  });
+}
+
+function addTripDay(tripId){
+  const date = window.prompt('這天的日期（YYYY-MM-DD）：');
+  if(!date) return;
+  const theme = window.prompt('這天的主題（例如：市區觀光、火山健行）：','') || '';
+  updateTrip(tripId, t=>{ t.days = t.days||[]; t.days.push({date, theme, cards:[]}); });
+  renderTripDetail(tripId);
+}
+function deleteTripDay(tripId, dayIdx){
+  if(!confirm('確定要刪除這一天嗎？')) return;
+  updateTrip(tripId, t=>{ t.days.splice(dayIdx,1); });
+  renderTripDetail(tripId);
+}
+function addTripCard(tripId, dayIdx){
+  const h_ = window.prompt('項目標題：');
+  if(!h_ || !h_.trim()) return;
+  const ico = window.prompt('emoji 圖示：','📌') || '📌';
+  const text = window.prompt('內容說明：','') || '';
+  updateTrip(tripId, t=>{ t.days[dayIdx].cards.push({ico:ico.trim()||'📌', h:h_.trim(), text:text.trim()}); });
+  renderTripDetail(tripId);
+}
+function editTripCard(tripId, dayIdx, cardIdx){
+  const t = getTrip(tripId);
+  const c = t.days[dayIdx].cards[cardIdx];
+  const h_ = window.prompt('項目標題：', c.h);
+  if(h_===null) return;
+  const ico = window.prompt('emoji 圖示：', c.ico);
+  const text = window.prompt('內容說明：', c.text);
+  updateTrip(tripId, tt=>{
+    const cc = tt.days[dayIdx].cards[cardIdx];
+    cc.h = h_.trim()||cc.h; cc.ico=(ico||'').trim()||cc.ico; cc.text = text===null? cc.text : text.trim();
+  });
+  renderTripDetail(tripId);
+}
+function deleteTripCard(tripId, dayIdx, cardIdx){
+  updateTrip(tripId, t=>{ t.days[dayIdx].cards.splice(cardIdx,1); });
+  renderTripDetail(tripId);
+}
+async function regenTripPlan(tripId){
+  const t = getTrip(tripId);
+  if(!confirm('這會用 AI 重新產生整趟行程與備品建議，覆蓋目前內容，確定嗎？')) return;
+  const cfg = getAICfg();
+  if(!cfg.key){ alert('請先到「🤖小幫手」設定 AI API Key'); return; }
+  const days = Math.round((new Date(t.end)-new Date(t.start))/86400000)+1;
+  const prefs = window.prompt('這次想補充什麼需求給 AI 參考？（可留空）','') || '';
+  showAILoading('🤖 AI 重新規劃中…');
+  try{
+    const plan = await requestTripPlan(cfg, t.dest, t.start, days, prefs);
+    updateTrip(tripId, tt=>{
+      tt.days = plan.days || [];
+      tt.pack = (plan.packing||[]).map((p,i)=>({id:'p'+i, t:(typeof p==='string'?p:p.t)||'', q:(p.q||1), c:false}));
+      tt.notes = plan.notes || '';
+    });
+    showGeoToast('✅ 已重新產生行程與備品建議');
+  }catch(err){
+    showGeoToast('⚠️ AI 規劃失敗：'+err.message);
+  }
+  renderTripDetail(tripId);
+}
+function deleteTrip(tripId){
+  if(!confirm('確定要刪除整趟行程嗎？這無法復原。')) return;
+  const list = loadTripList().filter(x=>x.id!==tripId);
+  saveTripList(list);
+  curTripId = null;
+  renderTrips();
+}
+function addTripPackItem(tripId){
+  const inp = document.getElementById('tripPackInput');
+  const val = inp.value.trim();
+  if(!val) return;
+  updateTrip(tripId, t=>{ t.pack = t.pack||[]; t.pack.push({id:'u'+Date.now(), t:val, q:1, c:false}); });
+  renderTripDetail(tripId);
+}
+function toggleTripPackItem(tripId, itemId, checked){
+  updateTrip(tripId, t=>{ const it=t.pack.find(x=>x.id===itemId); if(it) it.c=checked; });
+  renderTripDetail(tripId);
+}
+function changeTripPackQty(tripId, itemId, delta){
+  updateTrip(tripId, t=>{ const it=t.pack.find(x=>x.id===itemId); if(it) it.q=Math.max(1,(it.q||1)+delta); });
+  renderTripDetail(tripId);
+}
+function deleteTripPackItem(tripId, itemId){
+  updateTrip(tripId, t=>{ t.pack = t.pack.filter(x=>x.id!==itemId); });
+  renderTripDetail(tripId);
+}
+
 /* ---- PIN logic ---- */
 function renderPrivate(){
   setNav('private'); tabsEl.classList.add('hidden');
@@ -1409,6 +1686,7 @@ function rerender(){
   else if(curView==='buy')renderBuy();
   else if(curView==='konbini')renderKonbini();
   else if(curView==='pack')renderPack();
+  else if(curView==='trips')renderTrips();
   else if(curView==='private')renderPrivate();
 }
 
@@ -1443,6 +1721,7 @@ document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>{
   else if(v==='buy')renderBuy();
   else if(v==='konbini')renderKonbini();
   else if(v==='pack')renderPack();
+  else if(v==='trips')renderTrips();
   else if(v==='helper')renderHelper();
   else if(v==='private')renderPrivate();
 });
