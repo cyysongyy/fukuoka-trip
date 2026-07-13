@@ -813,31 +813,62 @@ function renderDays(){
   setNav('days'); buildDayTabs();
   const d = DAYS[curDay];
   const gpsOn = localStorage.getItem('fuk_gps_on')==='1';
+  const hiddenList = (loadHidden()[d.date] || []);
+  const customList = getCustomCards(d.date);
   let h = '<div class="dayhead"><span class="big">'+d.date+'（'+d.dow+'）</span>'+
     '<span class="theme">'+d.theme+'</span><span class="jp">'+d.jp+'</span></div>';
   h += '<div class="daytools">'+
     '<button class="resetbtn" id="gpsToggleBtn">'+(gpsOn?'📍 GPS 自動打卡：開':'📍 GPS 自動打卡：關')+'</button>'+
+    '<button class="resetbtn" id="addCardBtn">➕ 新增行程項目</button>'+
     '<button class="resetbtn" onclick="resetOrder()">↺ 還原本日原始順序</button>'+
     '</div>';
   if(gpsOn) h += '<div class="note" style="margin-bottom:10px">GPS 追蹤中，經過下方標註 📍 的地點附近會自動打上 ✅ 已到訪（App 需保持開啟在前景）。</div>';
   d.cards.forEach((c,idx)=>{
+    if(hiddenList.includes(c.h)) return;
     const isFirst = idx===0, isLast = idx===d.cards.length-1;
     const cp = GEO_CHECKPOINTS.find(x=>x.day===d.date && x.card===c.h);
     const visited = cp && isVisited(d.date, c.h);
+    const note = getCardNote(d.date, c.h);
     h += '<div class="card"><div class="card-h"><span class="cardnum">'+(idx+1)+'</span><span class="ico">'+c.ico+'</span>'+c.h+
       (cp ? '<button class="geobadge'+(visited?' visited':'')+'" onclick="toggleVisited(\''+d.date+'\',\''+escAttr(c.h)+'\')">'+(visited?'✅ 已到訪':'📍 未到訪')+'</button>' : '')+
       '<span class="reorder-btns">'+
         '<button class="ordbtn" onclick="moveCard('+idx+',-1)"'+(isFirst?' disabled':'')+'>▲</button>'+
         '<button class="ordbtn" onclick="moveCard('+idx+',1)"'+(isLast?' disabled':'')+'>▼</button>'+
+        '<button class="ordbtn" onclick="editCardNote(\''+d.date+'\',\''+escAttr(c.h)+'\')">📝</button>'+
+        '<button class="ordbtn" onclick="toggleHideCard(\''+d.date+'\',\''+escAttr(c.h)+'\')">🗑</button>'+
       '</span></div><div class="card-b">';
     if(c.steps) h += c.steps.map(s=>stepHtml(s, c.h.indexOf('皿倉')>-1||c.h.indexOf('渡輪')>-1)).join('');
     if(c.foods) h += c.foods.map(foodHtml).join('');
     if(c.notes) h += c.notes.map(n=>'<div class="note">'+n+'</div>').join('');
+    if(note) h += '<div class="note" style="border-left:3px solid var(--pri);padding-left:8px">✏️ '+esc(note).replace(/\n/g,'<br>')+'</div>';
     h += '</div></div>';
   });
+  if(hiddenList.length){
+    h += '<div class="card"><div class="card-b">';
+    h += '<div class="note" style="margin-bottom:6px">🗑 已隱藏 '+hiddenList.length+' 個項目：</div>';
+    hiddenList.forEach(hh=>{
+      h += '<div class="packrow"><span class="ptxt" style="color:var(--g400)">'+esc(hh)+'</span>'+
+        '<button class="resetbtn" onclick="toggleHideCard(\''+d.date+'\',\''+escAttr(hh)+'\')">↺ 復原</button></div>';
+    });
+    h += '</div></div>';
+  }
+  if(customList.length){
+    h += '<div class="dayhead" style="margin-top:6px"><span class="theme">🆕 你新增的項目</span></div>';
+    customList.forEach(item=>{
+      h += '<div class="card"><div class="card-h"><span class="ico">'+esc(item.ico)+'</span>'+esc(item.h)+
+        '<span class="reorder-btns">'+
+          '<button class="ordbtn" onclick="editCustomCard(\''+item.id+'\')">✏️</button>'+
+          '<button class="ordbtn" onclick="deleteCustomCard(\''+item.id+'\')">🗑</button>'+
+        '</span></div><div class="card-b">'+
+        (item.text ? '<div class="note">'+esc(item.text).replace(/\n/g,'<br>')+'</div>' : '')+
+        '</div></div>';
+    });
+  }
   main.innerHTML = h; window.scrollTo(0,0);
   const gbtn = document.getElementById('gpsToggleBtn');
   if(gbtn) gbtn.onclick = toggleGPS;
+  const abtn = document.getElementById('addCardBtn');
+  if(abtn) abtn.onclick = addCustomCard;
 }
 function escAttr(s){ return String(s).replace(/'/g,"\\'"); }
 function saveOrder(d){
@@ -871,6 +902,69 @@ function applySavedOrder(){
       d.cards = newCards;
     }catch(e){}
   });
+}
+
+/* ---- 行程項目自訂：隱藏／備註／新增 ---- */
+function loadHidden(){ try{ return JSON.parse(localStorage.getItem('fuk_hidden_cards')||'{}'); }catch(e){ return {}; } }
+function saveHidden(o){ localStorage.setItem('fuk_hidden_cards', JSON.stringify(o)); }
+function toggleHideCard(day, cardH){
+  const o = loadHidden();
+  o[day] = o[day] || [];
+  const i = o[day].indexOf(cardH);
+  if(i>-1) o[day].splice(i,1); else o[day].push(cardH);
+  saveHidden(o);
+  renderDays();
+}
+function loadCardNotes(){ try{ return JSON.parse(localStorage.getItem('fuk_card_notes')||'{}'); }catch(e){ return {}; } }
+function saveCardNotes(o){ localStorage.setItem('fuk_card_notes', JSON.stringify(o)); }
+function getCardNote(day, cardH){ return loadCardNotes()[day+'|'+cardH] || ''; }
+function editCardNote(day, cardH){
+  const cur = getCardNote(day, cardH);
+  const txt = window.prompt('為「'+cardH+'」新增／修改備註（不會動到原本的行程內容，留空即可清除）：', cur);
+  if(txt===null) return;
+  const o = loadCardNotes();
+  const k = day+'|'+cardH;
+  if(txt.trim()) o[k] = txt.trim(); else delete o[k];
+  saveCardNotes(o);
+  renderDays();
+}
+function loadCustomCards(){ try{ return JSON.parse(localStorage.getItem('fuk_custom_cards')||'{}'); }catch(e){ return {}; } }
+function saveCustomCards(o){ localStorage.setItem('fuk_custom_cards', JSON.stringify(o)); }
+function getCustomCards(day){ return loadCustomCards()[day] || []; }
+function addCustomCard(){
+  const d = DAYS[curDay];
+  const title = window.prompt('新增項目的名稱（例如：臨時決定去的咖啡廳）：');
+  if(!title || !title.trim()) return;
+  const ico = window.prompt('選一個 emoji 當圖示（留空預設 📌）：', '📌') || '📌';
+  const text = window.prompt('內容（時間、地點、備註都可以，直接打字換行）：', '') || '';
+  const all = loadCustomCards();
+  all[d.date] = all[d.date] || [];
+  all[d.date].push({id:'c'+Date.now(), ico: ico.trim()||'📌', h: title.trim(), text: text.trim()});
+  saveCustomCards(all);
+  renderDays();
+}
+function editCustomCard(id){
+  const d = DAYS[curDay];
+  const all = loadCustomCards();
+  const list = all[d.date] || [];
+  const item = list.find(x=>x.id===id);
+  if(!item) return;
+  const title = window.prompt('項目名稱：', item.h);
+  if(title===null) return;
+  const ico = window.prompt('emoji 圖示：', item.ico);
+  const text = window.prompt('內容：', item.text);
+  item.h = title.trim() || item.h;
+  item.ico = (ico||'').trim() || item.ico;
+  item.text = text===null ? item.text : text.trim();
+  saveCustomCards(all);
+  renderDays();
+}
+function deleteCustomCard(id){
+  const d = DAYS[curDay];
+  const all = loadCustomCards();
+  all[d.date] = (all[d.date]||[]).filter(x=>x.id!==id);
+  saveCustomCards(all);
+  renderDays();
 }
 
 /* ---- GPS 自動打卡 ---- */
