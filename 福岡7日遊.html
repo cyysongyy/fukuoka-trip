@@ -830,6 +830,8 @@ function renderDays(){
   h += '<div class="daytools">'+
     '<button class="resetbtn" id="gpsToggleBtn">'+(gpsOn?'📍 GPS 自動打卡：開':'📍 GPS 自動打卡：關')+'</button>'+
     '<button class="resetbtn" id="addCardBtn">➕ 新增行程項目</button>'+
+    '<button class="resetbtn" id="exportTripBtn">📤 匯出這趟行程</button>'+
+    '<button class="resetbtn" id="exportTripWordBtn">📄 匯出成 Word</button>'+
     '<button class="resetbtn" onclick="resetOrder()">↺ 還原本日原始順序</button>'+
     '</div>';
   if(gpsOn) h += '<div class="note" style="margin-bottom:10px">GPS 追蹤中，經過下方標註 📍 的地點附近會自動打上 ✅ 已到訪（App 需保持開啟在前景）。</div>';
@@ -879,6 +881,10 @@ function renderDays(){
   if(gbtn) gbtn.onclick = toggleGPS;
   const abtn = document.getElementById('addCardBtn');
   if(abtn) abtn.onclick = addCustomCard;
+  const ebtn = document.getElementById('exportTripBtn');
+  if(ebtn) ebtn.onclick = exportFukuokaTrip;
+  const ewbtn = document.getElementById('exportTripWordBtn');
+  if(ewbtn) ewbtn.onclick = exportFukuokaTripWord;
 }
 function escAttr(s){ return String(s).replace(/'/g,"\\'"); }
 function saveOrder(d){
@@ -1317,6 +1323,8 @@ function renderTripDetail(id){
   h += '<div class="daytools">'+
     '<button class="resetbtn" id="addTripDayBtn">➕ 新增一天</button>'+
     '<button class="resetbtn" id="regenTripBtn">🤖 重新請 AI 規劃</button>'+
+    '<button class="resetbtn" id="exportTripBtn2">📤 匯出行程</button>'+
+    '<button class="resetbtn" id="exportTripWordBtn2">📄 匯出成 Word</button>'+
     '<button class="resetbtn" id="deleteTripBtn" style="color:var(--pri)">🗑 刪除此行程</button>'+
     '</div>';
 
@@ -1361,6 +1369,8 @@ function renderTripDetail(id){
   document.getElementById('tripBackBtn').onclick = ()=>{ curTripId=null; renderTrips(); };
   document.getElementById('addTripDayBtn').onclick = ()=>addTripDay(t.id);
   document.getElementById('regenTripBtn').onclick = ()=>regenTripPlan(t.id);
+  document.getElementById('exportTripBtn2').onclick = ()=>exportTripPlan(t.id);
+  document.getElementById('exportTripWordBtn2').onclick = ()=>exportTripPlanWord(t.id);
   document.getElementById('deleteTripBtn').onclick = ()=>deleteTrip(t.id);
   document.getElementById('tripPackAddBtn').onclick = ()=>addTripPackItem(t.id);
   document.getElementById('tripPackInput').onkeydown = e=>{ if(e.key==='Enter') addTripPackItem(t.id); };
@@ -1455,6 +1465,187 @@ function changeTripPackQty(tripId, itemId, delta){
 function deleteTripPackItem(tripId, itemId){
   updateTrip(tripId, t=>{ t.pack = t.pack.filter(x=>x.id!==itemId); });
   renderTripDetail(tripId);
+}
+
+/* ================= 📤 行程匯出 ================= */
+function sanitizeFilename(s){ return String(s).replace(/[\/\\:*?"<>|]/g,'_'); }
+
+async function exportTextAsFile(text, filename, shareTitle){
+  const file = (typeof File!=='undefined') ? new File([text], filename, {type:'text/plain'}) : null;
+  if(navigator.canShare && file && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title: shareTitle}); return; }catch(e){ /* 使用者取消或不支援，繼續走下載備援 */ }
+  }
+  try{
+    const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    showGeoToast('📤 已匯出，請查看「檔案」App 的下載項目');
+  }catch(e){
+    if(navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(()=>showGeoToast('📤 已複製整份行程文字到剪貼簿'));
+    } else {
+      window.prompt('請手動複製匯出內容：', text);
+    }
+  }
+}
+
+function buildFukuokaExportText(){
+  const hidden = loadHidden();
+  const notes = loadCardNotes();
+  const custom = loadCustomCards();
+  let out = '🗾 跟我走，不會錯！－ 福岡 7 日遊\n2026/7/16（四）– 7/22（三）\n\n';
+  DAYS.forEach(d=>{
+    out += '========================================\n';
+    out += d.date+'（'+d.dow+'）'+(d.theme?'　'+d.theme:'')+'\n';
+    out += '----------------------------------------\n';
+    let n = 1;
+    const hiddenForDay = hidden[d.date] || [];
+    (d.cards||[]).forEach(c=>{
+      if(hiddenForDay.includes(c.h)) return;
+      const cp = GEO_CHECKPOINTS.find(x=>x.day===d.date && x.card===c.h);
+      const visited = cp && isVisited(d.date, c.h);
+      out += n+'. '+c.ico+' '+c.h+(visited?'　✅已到訪':'')+'\n';
+      const note = notes[d.date+'|'+c.h];
+      if(note) out += '   ✏️ 備註：'+note.replace(/\n/g,'\n   ')+'\n';
+      n++;
+    });
+    (custom[d.date]||[]).forEach(item=>{
+      out += n+'. '+item.ico+' '+item.h+'（自行新增）\n';
+      if(item.text) out += '   '+item.text.replace(/\n/g,'\n   ')+'\n';
+      n++;
+    });
+    out += '\n';
+  });
+  out += '========================================\n🎒 備品清單\n----------------------------------------\n';
+  loadPackList().forEach(p=>{ out += (p.c?'☑':'☐')+' '+p.t+' ×'+p.q+'\n'; });
+  out += '\n由「跟我走，不會錯！」App 匯出\n';
+  return out;
+}
+function exportFukuokaTrip(){
+  exportTextAsFile(buildFukuokaExportText(), sanitizeFilename('福岡7日遊-行程紀錄')+'.txt', '福岡7日遊 行程紀錄');
+}
+
+function buildTripExportText(t){
+  let out = '🧳 '+t.name+'\n📍 '+t.dest+'　🗓 '+t.start+' — '+t.end+'\n';
+  if(t.notes) out += '🌤 '+t.notes+'\n';
+  out += '\n';
+  (t.days||[]).forEach((d,di)=>{
+    out += '========================================\n';
+    out += 'Day '+(di+1)+'　'+(d.date||'')+(d.theme?'　'+d.theme:'')+'\n';
+    out += '----------------------------------------\n';
+    (d.cards||[]).forEach((c,ci)=>{
+      out += (ci+1)+'. '+(c.ico||'📌')+' '+(c.h||'')+'\n';
+      if(c.text) out += '   '+c.text.replace(/\n/g,'\n   ')+'\n';
+    });
+    if(!(d.cards||[]).length) out += '（這天沒有安排項目）\n';
+    out += '\n';
+  });
+  out += '========================================\n🎒 備品清單\n----------------------------------------\n';
+  (t.pack||[]).forEach(p=>{ out += (p.c?'☑':'☐')+' '+p.t+' ×'+p.q+'\n'; });
+  out += '\n由「跟我走，不會錯！」App 匯出\n';
+  return out;
+}
+function exportTripPlan(tripId){
+  const t = getTrip(tripId);
+  if(!t) return;
+  exportTextAsFile(buildTripExportText(t), sanitizeFilename(t.name)+'.txt', t.name+' 行程紀錄');
+}
+
+/* ---- 📄 匯出成 Word（MS Word 相容格式，可直接用 Word / Pages / Google 文件開啟） ---- */
+function wordShell(title, bodyHtml){
+  return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">'+
+    '<head><meta charset="utf-8"><title>'+esc(title)+'</title>'+
+    '<!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml><![endif]-->'+
+    '<style>'+
+    'body{font-family:"Microsoft JhengHei","PMingLiU",sans-serif;font-size:12pt;color:#1c1917;line-height:1.6}'+
+    'h1{color:#e11d48;font-size:20pt;margin-bottom:4pt}'+
+    'h2{color:#e11d48;font-size:14pt;border-bottom:1pt solid #ccc;padding-bottom:4pt;margin-top:22pt}'+
+    '.meta{color:#57534e;font-size:10.5pt;margin-bottom:14pt}'+
+    'ol{margin:6pt 0}'+
+    'li{margin-bottom:8pt}'+
+    '.subnote{color:#57534e;font-size:10.5pt;margin:2pt 0 0 4pt}'+
+    '.badge{color:#059669;font-weight:bold}'+
+    '.packitem{margin-bottom:4pt}'+
+    '</style></head><body>'+bodyHtml+'</body></html>';
+}
+async function exportHtmlAsWord(html, filename, shareTitle){
+  const file = (typeof File!=='undefined') ? new File([html], filename, {type:'application/msword'}) : null;
+  if(navigator.canShare && file && navigator.canShare({files:[file]})){
+    try{ await navigator.share({files:[file], title: shareTitle}); return; }catch(e){ /* 繼續走下載備援 */ }
+  }
+  try{
+    const blob = new Blob([html], {type:'application/msword'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 4000);
+    showGeoToast('📄 已匯出 Word 檔，請查看「檔案」App');
+  }catch(e){
+    showGeoToast('⚠️ Word 匯出失敗，請改用「匯出這趟行程」文字版');
+  }
+}
+
+function buildFukuokaWordBody(){
+  const hidden = loadHidden();
+  const notes = loadCardNotes();
+  const custom = loadCustomCards();
+  let b = '<h1>🗾 跟我走，不會錯！－ 福岡 7 日遊</h1><div class="meta">2026/7/16（四）– 7/22（三）</div>';
+  DAYS.forEach(d=>{
+    b += '<h2>'+esc(d.date)+'（'+esc(d.dow)+'）'+(d.theme?'　'+esc(d.theme):'')+'</h2><ol>';
+    const hiddenForDay = hidden[d.date] || [];
+    (d.cards||[]).forEach(c=>{
+      if(hiddenForDay.includes(c.h)) return;
+      const cp = GEO_CHECKPOINTS.find(x=>x.day===d.date && x.card===c.h);
+      const visited = cp && isVisited(d.date, c.h);
+      b += '<li><b>'+esc(c.ico)+' '+esc(c.h)+'</b>'+(visited?' <span class="badge">✅已到訪</span>':'');
+      const note = notes[d.date+'|'+c.h];
+      if(note) b += '<div class="subnote">✏️ 備註：'+esc(note).replace(/\n/g,'<br>')+'</div>';
+      b += '</li>';
+    });
+    (custom[d.date]||[]).forEach(item=>{
+      b += '<li><b>'+esc(item.ico)+' '+esc(item.h)+'</b>（自行新增）';
+      if(item.text) b += '<div class="subnote">'+esc(item.text).replace(/\n/g,'<br>')+'</div>';
+      b += '</li>';
+    });
+    b += '</ol>';
+  });
+  b += '<h2>🎒 備品清單</h2>';
+  loadPackList().forEach(p=>{ b += '<div class="packitem">'+(p.c?'☑':'☐')+' '+esc(p.t)+' ×'+p.q+'</div>'; });
+  b += '<p class="meta">由「跟我走，不會錯！」App 匯出</p>';
+  return b;
+}
+function exportFukuokaTripWord(){
+  const html = wordShell('福岡7日遊-行程紀錄', buildFukuokaWordBody());
+  exportHtmlAsWord(html, sanitizeFilename('福岡7日遊-行程紀錄')+'.doc', '福岡7日遊 行程紀錄');
+}
+
+function buildTripWordBody(t){
+  let b = '<h1>🧳 '+esc(t.name)+'</h1><div class="meta">📍 '+esc(t.dest)+'　🗓 '+esc(t.start)+' — '+esc(t.end)+'</div>';
+  if(t.notes) b += '<div class="meta">🌤 '+esc(t.notes)+'</div>';
+  (t.days||[]).forEach((d,di)=>{
+    b += '<h2>Day '+(di+1)+'　'+esc(d.date||'')+(d.theme?'　'+esc(d.theme):'')+'</h2><ol>';
+    (d.cards||[]).forEach(c=>{
+      b += '<li><b>'+esc(c.ico||'📌')+' '+esc(c.h||'')+'</b>';
+      if(c.text) b += '<div class="subnote">'+esc(c.text).replace(/\n/g,'<br>')+'</div>';
+      b += '</li>';
+    });
+    b += '</ol>';
+    if(!(d.cards||[]).length) b += '<p class="subnote">（這天沒有安排項目）</p>';
+  });
+  b += '<h2>🎒 備品清單</h2>';
+  (t.pack||[]).forEach(p=>{ b += '<div class="packitem">'+(p.c?'☑':'☐')+' '+esc(p.t)+' ×'+p.q+'</div>'; });
+  b += '<p class="meta">由「跟我走，不會錯！」App 匯出</p>';
+  return b;
+}
+function exportTripPlanWord(tripId){
+  const t = getTrip(tripId);
+  if(!t) return;
+  const html = wordShell(t.name, buildTripWordBody(t));
+  exportHtmlAsWord(html, sanitizeFilename(t.name)+'.doc', t.name+' 行程紀錄');
 }
 
 /* ---- PIN logic ---- */
