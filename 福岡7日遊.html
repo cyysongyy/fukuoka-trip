@@ -1093,14 +1093,20 @@ function renderSections(sections, hasMap, giftMode){
 function renderFood(){setNav('food');tabsEl.classList.add('hidden');
   main.innerHTML='<div class="dayhead"><span class="big">🍜 美食特輯</span></div>'+renderSections(FOOD_SECTIONS);window.scrollTo(0,0);}
 function renderBuy(){setNav('buy');tabsEl.classList.add('hidden');
-  main.innerHTML='<div class="dayhead"><span class="big">🎁 採買・伴手禮</span></div>'+renderSections(BUY_SECTIONS, false, true);window.scrollTo(0,0);
+  const freeNoteBlock = '<div class="card"><div class="card-h"><span class="ico">📝</span>自訂清單（物品・對象）</div><div class="card-b">'+
+    '<textarea class="fld" id="buyFreeNote" rows="4" placeholder="自由輸入，例如：唐吉訶德吹風機 → 送媽媽">'+esc(getBuyFreeNote())+'</textarea>'+
+    '</div></div>';
+  main.innerHTML='<div class="dayhead"><span class="big">🎁 採買・伴手禮</span></div>'+freeNoteBlock+renderSections(BUY_SECTIONS, false, true);window.scrollTo(0,0);
   bindBuyGiftInputs();
+  document.getElementById('buyFreeNote').oninput = e=> setBuyFreeNote(e.target.value);
 }
 function bindBuyGiftInputs(){
   main.querySelectorAll('[data-gift]').forEach(el=>{
     el.oninput = ()=> setBuyGift(el.dataset.gift, el.value);
   });
 }
+function getBuyFreeNote(){ return localStorage.getItem('fuk_buy_freenote') || ''; }
+function setBuyFreeNote(val){ localStorage.setItem('fuk_buy_freenote', val); }
 function renderKonbini(){setNav('konbini');tabsEl.classList.add('hidden');
   main.innerHTML='<div class="dayhead"><span class="big">🏪 超商必買</span></div>'+renderSections(KONBINI);window.scrollTo(0,0);}
 
