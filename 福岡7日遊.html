@@ -122,6 +122,8 @@ a.tel{color:var(--pri);font-weight:700;text-decoration:none}
 .food .n{font-weight:700;font-size:14px}
 .food .n .jpn{font-weight:500;color:var(--g500);font-size:12px}
 .food .d{font-size:13px;color:var(--g600);margin-top:1px}
+.giftrow{margin-top:6px}
+.giftfld{padding:6px 10px;font-size:13px;border-color:var(--g200)}
 
 /* note box */
 .note{background:#fffbeb;border-left:4px solid var(--warn);padding:9px 12px;border-radius:0 10px 10px 0;font-size:13px;color:#78350f;margin:8px 0}
@@ -815,9 +817,18 @@ function stepHtml(s,sea){
     '<div class="t">'+s.t+(s.jpn?' <span class="jpn">'+s.jpn+'</span>':'')+'</div>'+
     (m?'<div class="meta">'+m+'</div>':'')+ (map?'<div>'+map+'</div>':'') + tipsHtml(s.map||s.t) + guideHtml(s.map||s.t) +'</div></div>';
 }
-function foodHtml(f){
+function foodHtml(f, giftKey){
+  const giftRow = giftKey ? '<div class="giftrow"><input class="fld giftfld" data-gift="'+escAttr(giftKey)+'" placeholder="🎁 送禮對象姓名" value="'+esc(getBuyGift(giftKey))+'"></div>' : '';
   return '<div class="food"><div class="n">'+f.n+(f.jpn?' <span class="jpn">'+f.jpn+'</span>':'')+'</div>'+
-    (f.d?'<div class="d">'+f.d+'</div>':'')+ (f.map?ml(f.map,f.map)+ph(f.map):'') + tipsHtml(f.map||f.n) +'</div>';
+    (f.d?'<div class="d">'+f.d+'</div>':'')+ (f.map?ml(f.map,f.map)+ph(f.map):'') + tipsHtml(f.map||f.n) + giftRow +'</div>';
+}
+function loadBuyGifts(){ try{ return JSON.parse(localStorage.getItem('fuk_buy_gifts')||'{}'); }catch(e){ return {}; } }
+function saveBuyGifts(o){ localStorage.setItem('fuk_buy_gifts', JSON.stringify(o)); }
+function getBuyGift(key){ return loadBuyGifts()[key] || ''; }
+function setBuyGift(key, val){
+  const o = loadBuyGifts();
+  if(val && val.trim()) o[key] = val; else delete o[key];
+  saveBuyGifts(o);
 }
 function renderDays(){
   setNav('days'); buildDayTabs();
@@ -1064,7 +1075,7 @@ function toggleGPS(){
 }
 
 
-function renderSections(sections, hasMap){
+function renderSections(sections, hasMap, giftMode){
   let h='';
   sections.forEach(s=>{
     h+='<div class="card"><div class="card-h"><span class="ico">'+s.ico+'</span>'+s.title+'</div><div class="card-b">';
@@ -1072,7 +1083,7 @@ function renderSections(sections, hasMap){
       if(typeof s.items[0]==='string'){
         h+= '<ul style="padding-left:18px">'+s.items.map(x=>'<li style="margin:4px 0">'+x+'</li>').join('')+'</ul>';
       } else {
-        h+= s.items.map(foodHtml).join('');
+        h+= s.items.map(x=>foodHtml(x, giftMode ? (s.title+'|'+x.n) : null)).join('');
       }
     }
     h+='</div></div>';
@@ -1082,7 +1093,14 @@ function renderSections(sections, hasMap){
 function renderFood(){setNav('food');tabsEl.classList.add('hidden');
   main.innerHTML='<div class="dayhead"><span class="big">🍜 美食特輯</span></div>'+renderSections(FOOD_SECTIONS);window.scrollTo(0,0);}
 function renderBuy(){setNav('buy');tabsEl.classList.add('hidden');
-  main.innerHTML='<div class="dayhead"><span class="big">🎁 採買・伴手禮</span></div>'+renderSections(BUY_SECTIONS);window.scrollTo(0,0);}
+  main.innerHTML='<div class="dayhead"><span class="big">🎁 採買・伴手禮</span></div>'+renderSections(BUY_SECTIONS, false, true);window.scrollTo(0,0);
+  bindBuyGiftInputs();
+}
+function bindBuyGiftInputs(){
+  main.querySelectorAll('[data-gift]').forEach(el=>{
+    el.oninput = ()=> setBuyGift(el.dataset.gift, el.value);
+  });
+}
 function renderKonbini(){setNav('konbini');tabsEl.classList.add('hidden');
   main.innerHTML='<div class="dayhead"><span class="big">🏪 超商必買</span></div>'+renderSections(KONBINI);window.scrollTo(0,0);}
 
